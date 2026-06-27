@@ -1,0 +1,58 @@
+Title: Ambient Thermal Soundscape
+Status: Draft
+Priority: Near-term 3
+
+Goal
+Improve immersion with subtle bubbling/hissing sounds around hot and boiling pools.
+
+Current State
+- Visual steam exists.
+- No local ambient audio behavior.
+
+Scope
+- Add low-volume ambient loops or periodic one-shots near hot spring water.
+- Different intensity for hot vs boiling water.
+- Allow server-side disable or volume tuning.
+
+Out of Scope
+- Complex dynamic music system.
+- Voice/UI audio features.
+
+Design
+1. Choose sound assets:
+   - hot_springs_bubble.ogg
+   - hot_springs_hiss.ogg
+2. Trigger strategy:
+   - Preferred: periodic one-shot sounds near players in range.
+   - Avoid always-on per-node loops that can stack too much.
+3. Range model:
+   - Scan small radius around player for hot/boiling nodes.
+   - If present, play occasional sound with randomized pitch/gain.
+4. Settings:
+   - hot_springs_ambient_sound_enabled
+   - hot_springs_ambient_sound_interval
+   - hot_springs_ambient_sound_gain
+
+Implementation Steps
+1. Add sound files under textures/sounds location used by mod.
+2. Add per-player ambient timer state.
+3. Implement periodic area check and probabilistic sound play.
+4. Add separate probabilities/intensity for boiling node proximity.
+5. Add settings and defaults.
+
+Testing Plan
+- Approach pool: hear subtle ambient audio.
+- Leave pool area: ambient sound stops naturally.
+- Boiling pools: stronger/more frequent cues than normal hot pools.
+- Disable setting: no ambient sounds play.
+
+Acceptance Criteria
+- Nearby pools feel sonically alive without being noisy.
+- No rapid stacking or clipping from overlapping sounds.
+- Server admin can tune or disable ambient audio.
+
+Risks and Mitigations
+- Risk: too many overlapping sounds.
+  Mitigation: per-player timer with min interval and random gating.
+- Risk: missing assets break playback.
+  Mitigation: include asset existence checks and fallback behavior.

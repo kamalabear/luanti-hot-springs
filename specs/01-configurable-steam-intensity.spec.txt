@@ -1,0 +1,73 @@
+Title: Configurable Steam Intensity
+Status: Draft
+Priority: Near-term 1
+
+Goal
+Allow server owners to tune steam visuals and performance without code edits.
+
+Current State
+- Steam is spawned by two ABMs in init.lua for hot water source and flowing nodes.
+- Particle values are hardcoded (amount, size, lifetime, interval/chance behavior).
+
+Scope
+- Add tunable settings for particle amount, size, lifetime, glow, and ABM cadence.
+- Keep current default visuals as baseline for backward compatibility.
+- No gameplay changes in this item.
+
+Out of Scope
+- New particle textures.
+- Sound or temperature logic.
+- Spawner lifetime (`time` parameter of add_particlespawner) — kept as current randomized behavior.
+
+Design
+1. Add setting declarations in settingtypes.txt with the following settings, types, defaults, and clamp ranges:
+   - hot_springs_steam_enabled (bool, default true)
+   - hot_springs_steam_amount_min (float, default 0.05, clamped ≥ 0)
+   - hot_springs_steam_amount_max (float, default 0.15, clamped ≥ 0)
+   - hot_springs_steam_size_min (float, default 0.5, clamped ≥ 0)
+   - hot_springs_steam_size_max (float, default 7.0, clamped ≥ 0)
+   - hot_springs_steam_exptime_min (float, default 8.0, clamped ≥ 0)
+   - hot_springs_steam_exptime_max (float, default 16.0, clamped ≥ 0)
+   - hot_springs_steam_glow (int, default 3, clamped 0–14)
+   - hot_springs_steam_source_interval (int, default 10, clamped ≥ 1)
+   - hot_springs_steam_source_chance (int, default 6, clamped ≥ 1)
+   - hot_springs_steam_flowing_amount_min (float, default 0.05, clamped ≥ 0)
+   - hot_springs_steam_flowing_amount_max (float, default 0.1, clamped ≥ 0)
+   - hot_springs_steam_flowing_exptime_min (float, default 5.0, clamped ≥ 0)
+   - hot_springs_steam_flowing_exptime_max (float, default 10.0, clamped ≥ 0)
+   - hot_springs_steam_flowing_interval (int, default 30, clamped ≥ 1)
+   - hot_springs_steam_flowing_chance (int, default 10, clamped ≥ 1)
+2. Read settings at mod init with above defaults.
+3. Clamp each setting to its defined range on read; if a value fails type coercion (e.g., non-numeric string), fall back to default.
+4. Replace hardcoded ABM values with configured values.
+5. Gate particle spawner calls behind hot_springs_steam_enabled.
+6. Reduce or remove per-spawn action logging to avoid log spam.
+
+Implementation Steps
+1. Create settingtypes.txt with all setting metadata, including descriptions and safe-value ranges.
+2. Add a config table in init.lua that reads and clamps all settings at load time.
+3. Remove the per-spawn action log lines (minetest.log calls inside ABM actions).
+4. Refactor steam ABMs to use config table values instead of hardcoded literals.
+5. Gate particle spawner calls behind hot_springs_steam_enabled.
+6. Keep defaults matching current hardcoded values so there is no visible regression.
+
+Testing Plan
+- Baseline: run with defaults and verify no visible regression from current hardcoded values.
+- Performance: set low values (e.g., amount 0, size 0.1) and confirm reduced particle load.
+- Stress: set high values (e.g., amount 10, glow 14) and confirm no errors.
+- Invalid settings: negative values, out-of-range values, and non-numeric strings should clamp or fall back safely without crashing.
+- Disable: set hot_springs_steam_enabled = false and confirm no particles spawn.
+
+Acceptance Criteria
+- Server owner can independently tune particle amount, size, expiration time, glow, and ABM cadence via settings.
+- Default values match the current hardcoded values exactly — no visible regression.
+- Mod loads without errors with defaults, partial settings, and no custom settings.
+- Invalid values (negative, out-of-range, wrong type) are silently clamped or fall back to defaults.
+- Per-spawn minetest.log("action", ...) calls are removed.
+- hot_springs_steam_enabled = false produces zero steam particles.
+
+Risks and Mitigations
+- Risk: invalid settings cause bad visuals.
+  Mitigation: strict clamps and fallback defaults.
+- Risk: too many particles hurt FPS.
+  Mitigation: document safe ranges in settingtypes descriptions.

@@ -1,0 +1,87 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Deploy to Minetest (Flatpak)",
+            "type": "shell",
+            "command": "rsync -r --exclude '.git' ${workspaceFolder}/ /home/kc/.var/app/org.luanti.luanti/.minetest/mods/luanti-hot-springs/",
+            "group": "none",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Lint Lua (This Mod)",
+            "type": "shell",
+            "command": "if ! command -v luacheck >/dev/null 2>&1; then echo 'luacheck not installed. Install with: luarocks install luacheck'; exit 1; fi; luacheck . --config .luacheckrc",
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Lint Lua (Changed Files)",
+            "type": "shell",
+            "command": "if ! command -v luacheck >/dev/null 2>&1; then echo 'luacheck not installed. Install with: luarocks install luacheck'; exit 1; fi; files=$( (git diff --name-only -- '*.lua'; git diff --cached --name-only -- '*.lua'; git ls-files --others --exclude-standard -- '*.lua') | awk 'NF' | sort -u ); if [ -z \"$files\" ]; then echo 'No changed Lua files to lint.'; exit 0; fi; echo \"Linting changed Lua files:\"; printf '%s\n' $files; luacheck $files --config .luacheckrc",
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Test Lua (This Mod)",
+            "type": "shell",
+            "command": "if ! command -v busted >/dev/null 2>&1; then echo 'busted not installed. Install with: luarocks install busted'; exit 1; fi; busted",
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Smoke Test (Docker)",
+            "type": "shell",
+            "command": "SMOKE_TEST_RUNTIME_DIR=${workspaceFolder}/../.smoke-test-runtime bash ${workspaceFolder}/../.github/scripts/smoke-test.sh hot_springs ${workspaceFolder}",
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Smoke Test Preflight",
+            "type": "shell",
+            "command": "SMOKE_TEST_RUNTIME_DIR=${workspaceFolder}/../.smoke-test-runtime bash ${workspaceFolder}/../.github/scripts/smoke-test-preflight.sh",
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Smoke Test (CI Profile)",
+            "type": "shell",
+            "command": "SMOKE_TEST_DEP_SOURCE=hybrid SMOKE_TEST_STUB_FIRST_DEPS=moreblocks SMOKE_TEST_WORKSPACE_FIRST_DEPS= SMOKE_TEST_RUNTIME_DIR=${workspaceFolder}/../.smoke-test-runtime bash ${workspaceFolder}/../.github/scripts/smoke-test.sh hot_springs ${workspaceFolder}",
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Smoke Test Cleanup",
+            "type": "shell",
+            "command": "find ${workspaceFolder}/../.smoke-test-runtime -mindepth 1 -maxdepth 1 -mtime +7 -exec rm -rf {} + 2>/dev/null || true; echo 'Removed smoke-test runtime entries older than 7 days.'",
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        }
+    ]
+}

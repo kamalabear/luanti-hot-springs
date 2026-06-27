@@ -1,0 +1,56 @@
+Title: Healing and Heat Damage Balancing
+Status: Draft
+Priority: Near-term 6
+
+Goal
+Implement a clear risk/reward loop: moderate pools heal slowly, extreme pools harm players.
+
+Current State
+- Boiling water source currently applies direct damage_per_second.
+- Healing behavior is not implemented.
+
+Scope
+- Add healing over time for safe temperature classes.
+- Add or refine damage over time for dangerous classes.
+- Balance rates and intervals using configurable settings.
+
+Out of Scope
+- Complex RPG buffs/debuff trees.
+- PvP-specific balancing rules.
+
+Design
+1. Use variable temperature API as source of truth.
+2. Globalstep tick applies effects to players in hot spring water:
+   - warm: small heal over time
+   - hot: neutral or tiny heal (configurable)
+   - scalding: damage over time
+3. Use per-player timer accumulator to avoid per-frame hp changes.
+4. Add settings:
+   - heal_per_tick
+   - damage_per_tick
+   - effect_tick_seconds
+   - max_heal_temperature_class
+
+Implementation Steps
+1. Add player effect manager table with elapsed timers.
+2. Integrate node/temperature detection for current player position.
+3. Apply hp change at configured intervals with bounds checks.
+4. Reconcile with node-level damage_per_second to avoid double damage.
+5. Add optional chat debug logs behind a debug setting.
+
+Testing Plan
+- Warm pools heal at expected rate.
+- Scalding pools damage at expected rate.
+- Moving between pool classes updates behavior quickly.
+- No effect applied when player is outside hot spring water.
+
+Acceptance Criteria
+- Healing and damage behavior is predictable and tunable.
+- No accidental double-application of damage.
+- Multiplayer behavior is consistent per player.
+
+Risks and Mitigations
+- Risk: node damage and script damage stack unexpectedly.
+  Mitigation: choose one source of damage and document it clearly.
+- Risk: balance feels unfair.
+  Mitigation: expose rates as settings and iterate from playtests.

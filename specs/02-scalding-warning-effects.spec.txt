@@ -1,0 +1,52 @@
+Title: Scalding Warning Effects
+Status: Draft
+Priority: Near-term 2
+
+Goal
+Warn players clearly when entering dangerous hot spring water before sustained damage creates confusion.
+
+Current State
+- boiling_water_source has damage_per_second set.
+- There is no explicit warning cue tied to danger entry.
+
+Scope
+- Add visual/audio warning when player enters boiling or dangerous temperature water.
+- Add short cooldown to avoid repeating alerts every tick.
+- Keep warning lightweight and readable.
+
+Out of Scope
+- Full status effect UI framework.
+- New damage model tuning (covered in balancing spec).
+
+Design
+1. Detect player presence in dangerous nodes during globalstep.
+2. Track per-player warning cooldown in a Lua table keyed by player name.
+3. Trigger one or more cues:
+   - Sound cue (short hiss/scald sound).
+   - Brief particle burst near player feet/head.
+   - Optional chat/status text once per cooldown window.
+4. Optional setting to disable warning text if server prefers no chat messages.
+
+Implementation Steps
+1. Add helper: is_dangerous_hot_springs_node(node_name).
+2. Add globalstep player scan at modest interval (for example every 0.25s).
+3. Add cooldown map and prune on leaveplayer.
+4. Add warning trigger with anti-spam logic.
+5. Add settings for warning enabled and cooldown seconds.
+
+Testing Plan
+- Enter boiling water: warning plays once, then respects cooldown.
+- Stay in boiling water: no spam.
+- Exit and re-enter after cooldown: warning triggers again.
+- Multiple players: each receives independent cooldown behavior.
+
+Acceptance Criteria
+- Players receive clear non-spam warning when entering dangerous water.
+- Warnings are independent per player.
+- No errors when players join/leave frequently.
+
+Risks and Mitigations
+- Risk: warning spam annoys users.
+  Mitigation: enforce cooldown and optional text disable.
+- Risk: heavy scans impact server.
+  Mitigation: throttle scan interval and only inspect players near water.

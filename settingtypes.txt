@@ -1,0 +1,23 @@
+# Hot Springs — Steam settings
+# Reload the world/server after changing these.
+
+hot_springs_steam_enabled (Enable steam particles) bool true
+hot_springs_steam_amount_min (Min particles per spawn cycle) float 0.05 0.0 10.0
+hot_springs_steam_amount_max (Max particles per spawn cycle) float 0.15 0.0 10.0
+hot_springs_steam_size_min (Min particle size) float 0.5 0.0 20.0
+hot_springs_steam_size_max (Max particle size) float 7.0 0.0 20.0
+hot_springs_steam_exptime_min (Min particle expiration time seconds) float 8.0 0.0 60.0
+hot_springs_steam_exptime_max (Max particle expiration time seconds) float 16.0 0.0 60.0
+hot_springs_steam_glow (Particle light level (0-14)) int 3 0 14
+hot_springs_steam_source_interval (ABM interval for source node seconds) int 10 1 3600
+hot_springs_steam_source_chance (ABM chance for source node) int 6 1 100
+hot_springs_steam_flowing_amount_min (Min particles per spawn cycle, flowing node) float 0.05 0.0 10.0
+hot_springs_steam_flowing_amount_max (Max particles per spawn cycle, flowing node) float 0.1 0.0 10.0
+hot_springs_steam_flowing_exptime_min (Min particle expiration time seconds, flowing node) float 5.0 0.0 60.0
+hot_springs_steam_flowing_exptime_max (Max particle expiration time seconds, flowing node) float 10.0 0.0 60.0
+hot_springs_steam_flowing_interval (ABM interval for flowing node seconds) int 30 1 3600
+hot_springs_steam_flowing_chance (ABM chance for flowing node) int 10 1 100
+
+# Hot Springs — Scalding Warning Effects
+hot_springs_warning_chat_enabled (Enable boiling water chat warning) bool true
+hot_springs_warning_cooldown (Seconds between repeat warnings) float 10.0 1.0 3600.0

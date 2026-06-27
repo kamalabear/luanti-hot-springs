@@ -1,0 +1,52 @@
+Title: Temperature-Based Water Color
+Status: Draft
+Priority: Near-term 5
+
+Goal
+Provide immediate visual feedback about pool temperature through distinct water color variants.
+
+Current State
+- Hot water currently uses one texture set.
+- No color differentiation by temperature class.
+
+Scope
+- Add color variants linked to temperature classes from variable temperature API.
+- Keep existing texture style and animation behavior.
+
+Out of Scope
+- Shader pipeline customization.
+- Runtime recolor requiring engine patches.
+
+Design
+1. Variant strategy options:
+   - Separate node variants per class (reliable and explicit).
+   - Texture modifiers if supported for liquids in target engine version.
+2. Near-term recommendation:
+   - Use explicit node variants with dedicated textures:
+     - warm water (green-tinted)
+     - hot water (current)
+     - scalding water (orange/red-tinted)
+3. Map variant nodes to temperature classes.
+4. Ensure flowing/source pairs exist for each displayed class.
+
+Implementation Steps
+1. Create texture variants for source and flowing animations.
+2. Register additional liquid nodes or remap existing node visuals.
+3. Tie node usage to temperature classification points in biome/placement logic.
+4. Validate that liquid alternatives are wired correctly.
+
+Testing Plan
+- Each temperature class shows the expected color.
+- Liquids still flow and interact normally.
+- Colors remain readable in daylight and low light.
+
+Acceptance Criteria
+- Players can infer relative danger from water color alone.
+- No broken liquid behavior from node variant registration.
+- Existing worlds still load without missing-node issues.
+
+Risks and Mitigations
+- Risk: too many liquid node variants increase complexity.
+  Mitigation: start with three classes and expand only if needed.
+- Risk: color accessibility concerns.
+  Mitigation: pair color with particles/audio warning intensity.

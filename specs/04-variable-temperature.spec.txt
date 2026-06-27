@@ -1,0 +1,54 @@
+Title: Variable Temperature Foundation
+Status: Draft
+Priority: Near-term 4
+
+Goal
+Create a robust temperature model that other systems can consume (color, healing, damage, warnings).
+
+Current State
+- Hot and boiling are represented by distinct node definitions.
+- No generalized numeric temperature system exists.
+
+Scope
+- Define a normalized temperature model for hot spring nodes.
+- Provide utility API functions to read and classify temperature.
+- Keep initial implementation simple and deterministic.
+
+Out of Scope
+- Full procedural thermal simulation.
+- Dynamic heat diffusion across mapblocks.
+
+Design
+1. Temperature representation options:
+   - Option A: by node type mapping (quickest).
+   - Option B: by node metadata/perlin map (more flexible).
+2. Near-term recommendation:
+   - Start with node mapping table:
+     - hot_water_source/flowing -> warm range
+     - boiling_water_source -> hot range
+3. Expose helper API in init.lua:
+   - get_pool_temperature(node_name, pos)
+   - classify_temperature(temp) -> cool/warm/hot/scalding
+4. Add server settings for threshold boundaries.
+
+Implementation Steps
+1. Define temperature constants and threshold config.
+2. Implement helper functions and local unit-like checks via assertions/logs.
+3. Replace direct node checks in newer features with helper API.
+4. Document temperature classes in README and settingtypes.
+
+Testing Plan
+- Each supported node returns expected temperature class.
+- Threshold changes via settings shift class boundaries correctly.
+- Helper API handles unknown node names safely.
+
+Acceptance Criteria
+- One shared temperature API is available for all near-term systems.
+- No feature duplicates temperature logic ad hoc.
+- Defaults preserve current expected behavior (hot vs boiling distinction).
+
+Risks and Mitigations
+- Risk: incompatible future expansion if model is too rigid.
+  Mitigation: API abstraction hides source representation.
+- Risk: unclear threshold tuning.
+  Mitigation: expose and document thresholds in settings.
