@@ -23,6 +23,7 @@ local defaults = {
 	vent_scan_radius = 20,
 	vent_spread_radius = 200,
 	vent_max_count = 2,
+	pool_max_radius = 25,
 	heal_warm_rate = 0.5,
 	heal_hot_rate = 1.0,
 }
@@ -45,6 +46,7 @@ local clamps = {
 	temp_scalding_min = {1, nil},
 	temp_gradient = {0.1, nil},
 	vent_scan_radius = {1, nil},
+	pool_max_radius = {1, nil},
 	vent_spread_radius = {1, 225},
 	vent_max_count = {1, nil},
 	heal_warm_rate = {0, 20},
@@ -125,6 +127,7 @@ config.vent_scan_radius = read_int("hot_springs_vent_scan_radius", defaults.vent
 -- Vent spread config (CID-1 extended)
 config.vent_spread_radius = read_int("hot_springs_vent_spread_radius", defaults.vent_spread_radius, clamps.vent_spread_radius[1], clamps.vent_spread_radius[2])
 config.vent_max_count = read_int("hot_springs_vent_max_count", defaults.vent_max_count, clamps.vent_max_count[1], clamps.vent_max_count[2])
+config.pool_max_radius = read_int("hot_springs_pool_max_radius", defaults.pool_max_radius, clamps.pool_max_radius[1], clamps.pool_max_radius[2])
 
 -- Healing config (CID-1 extended)
 config.heal_warm_rate = read_float("hot_springs_heal_warm_rate", defaults.heal_warm_rate, clamps.heal_warm_rate[1], clamps.heal_warm_rate[2])
@@ -171,10 +174,10 @@ local WATER_NODE_NAMES = {
 }
 
 -- Shared falloff computation: nearest vent within radius, gradient applied
-local function compute_falloff_temp(pos, vent_list, static_temp)
+local function compute_falloff_temp(pos, vent_list, static_temp, radius_override)
     local best_dist = nil
     local best_temp = nil
-    local radius = config.vent_scan_radius
+    local radius = radius_override or config.vent_scan_radius
     for _, vent in ipairs(vent_list) do
         local dx = vent.pos.x - pos.x
         local dy = vent.pos.y - pos.y
@@ -589,7 +592,7 @@ end
 
 -- CID-8: Gradient Worldgen — post-process each chunk to apply vent-driven water node replacement
 minetest.register_on_generated(function(minp, maxp)
-	local margin = config.vent_scan_radius
+	local margin = math.max(config.vent_scan_radius, config.pool_max_radius)
 	local spread = config.vent_spread_radius
 	local max_vents = config.vent_max_count
 
@@ -615,11 +618,12 @@ minetest.register_on_generated(function(minp, maxp)
 				minetest.set_node(vpos, {name = "hot_springs:vent_block"})
 				local vent_temp = math.random(config.temp_warm_min, 100)
 				minetest.get_meta(vpos):set_int("hot_springs_temperature", vent_temp)
+				minetest.log("action", "[hot_springs] Placed vent at (" .. vpos.x .. "," .. vpos.y .. "," .. vpos.z .. ") temp=" .. vent_temp)
 			end
 		end
 	end
 
-	-- Build vent list (including any just-placed vent)
+	-- Build vent list for temperature computation (standard margin)
 	local water_positions = minetest.find_nodes_in_area(minp, maxp, WATER_NODE_NAMES)
 	if #water_positions == 0 then return end
 
@@ -644,8 +648,26 @@ minetest.register_on_generated(function(minp, maxp)
 			local is_flowing = node.name:find("_flowing$")
 			local suffix = is_flowing and "_water_flowing" or "_water_source"
 			local static_temp = node_temperatures[node.name] or 20
-			local temp = compute_falloff_temp(pos, vents, static_temp)
+			local temp = compute_falloff_temp(pos, vents, static_temp, margin)
 			local class = hot_springs.classify_temperature(temp)
+
+			if class ~= "cool" then
+				local pr2 = config.pool_max_radius * config.pool_max_radius
+				local vent_nearby = false
+				for _, vent in ipairs(vents) do
+					local dx = vent.pos.x - pos.x
+					local dy = vent.pos.y - pos.y
+					local dz = vent.pos.z - pos.z
+					local sq = dx * dx + dy * dy + dz * dz
+					if sq <= pr2 then
+						vent_nearby = true
+						break
+					end
+				end
+				if not vent_nearby then
+					class = "cool"
+				end
+			end
 
 			local new_name
 			if class == "cool" then

@@ -36,6 +36,7 @@ hot_springs_temp_gradient (Temperature loss per block from vent) float 5.0 0.1 1
 hot_springs_vent_scan_radius (Max distance to search for vents) int 20 1 500
 hot_springs_vent_spread_radius (Max radius to check for nearby vents before placing a new one) int 200 1 225
 hot_springs_vent_max_count (Maximum vents allowed within spread radius) int 2 1 100
+hot_springs_pool_max_radius (Maximum pool radius from nearest vent) int 25 1
 
 # Hot Springs — Healing
 hot_springs_heal_warm_rate (Healing HP/s in warm water) float 0.5 0.0 20.0

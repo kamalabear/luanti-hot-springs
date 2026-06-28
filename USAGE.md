@@ -68,6 +68,7 @@ All settings are declared in `settingtypes.txt` and appear in Luanti's settings 
 - `hot_springs_vent_scan_radius` (int, default 20) — Maximum radius (in nodes) to search for vent blocks when computing pool temperature.
 - `hot_springs_vent_spread_radius` (int, default 200, max 225) — Radius to scan for existing vents before placing a new one during worldgen. Scans a 3D volume which must stay under 150M nodes; 225 is the safe maximum with default chunk size.
 - `hot_springs_vent_max_count` (int, default 2) — Maximum number of vents allowed within `vent_spread_radius` before new vent placement is skipped.
+- `hot_springs_pool_max_radius` (int, default 25) — Maximum distance from a vent block that water can be heated. Water nodes farther from the nearest vent than this value remain as default water during worldgen, regardless of temperature gradient calculations.
 
 ### Healing
 - `hot_springs_heal_warm_rate` (float, default 0.5) — HP per second restored in warm water after a 1-second grace period.

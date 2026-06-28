@@ -380,7 +380,7 @@ describe("Temperature Gradient System", function()
     -----------------------------------------------------------------------
     -- CID-8: No vents → no changes
     -----------------------------------------------------------------------
-    it("should not modify water when no vent is nearby", function()
+    it("should revert biome-placed hot spring water to default when no vent is nearby", function()
         reset_mock_settings({})
         reload_mod()
         minetest.set_node({x = 0, y = 0, z = 0}, {name = "default:water_source"})
@@ -389,7 +389,7 @@ describe("Temperature Gradient System", function()
         minetest._on_generated({x = 0, y = 0, z = 0}, {x = 15, y = 15, z = 15})
 
         assert.are.equal("default:water_source", minetest.get_node({x = 0, y = 0, z = 0}).name)
-        assert.are.equal("hot_springs:warm_water_source", minetest.get_node({x = 10, y = 0, z = 0}).name)
+        assert.are.equal("default:water_source", minetest.get_node({x = 10, y = 0, z = 0}).name)
     end)
 
     -----------------------------------------------------------------------

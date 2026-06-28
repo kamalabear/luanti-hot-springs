@@ -55,6 +55,7 @@ All setting keys are prefixed with `hot_springs_`. Category groups:
 - `hot_springs_vent_scan_radius` — Radius to search for vent blocks
 - `hot_springs_vent_spread_radius` — Wide radius to scan for nearby vents before placing a new one during worldgen
 - `hot_springs_vent_max_count` — Maximum vents allowed within that radius
+- `hot_springs_pool_max_radius` — Hard cap on pool radius from nearest vent; water beyond this distance stays default during worldgen
 - `hot_springs_heal_*` — Healing rates for warm and hot water
 
 Settings are read at mod init, clamped to safe ranges, and stored in the `config` table. Invalid or missing settings fall back to defaults. Min/max pairs are swapped if inverted.

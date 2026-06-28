@@ -7,6 +7,12 @@ describe("Thermal Biome Transformation (CID-10)", function()
         dofile(modpath .. "/init.lua")
     end
 
+    local function setup_vent(pos, temperature)
+        table.insert(minetest._nodes_in_area, {pos = pos, name = "hot_springs:vent_block"})
+        local meta = minetest.get_meta(pos)
+        meta:set_int("hot_springs_temperature", temperature)
+    end
+
     before_each(function()
         reset_mock_state()
 
@@ -31,6 +37,7 @@ describe("Thermal Biome Transformation (CID-10)", function()
     -----------------------------------------------------------------------
     it("R1: should melt snow to air adjacent to warm water", function()
         minetest.set_node({x = 5, y = 0, z = 5}, {name = "hot_springs:warm_water_source"})
+        setup_vent({x = 5, y = -1, z = 5}, 40)
         minetest.set_node({x = 6, y = 0, z = 5}, {name = "default:snow"})
 
         minetest._on_generated({x = 0, y = -1, z = 0}, {x = 15, y = 5, z = 15})
@@ -40,6 +47,7 @@ describe("Thermal Biome Transformation (CID-10)", function()
 
     it("R1: should convert dirt_with_snow to dirt adjacent to warm water", function()
         minetest.set_node({x = 5, y = 0, z = 5}, {name = "hot_springs:warm_water_source"})
+        setup_vent({x = 5, y = -1, z = 5}, 40)
         minetest.set_node({x = 6, y = 0, z = 5}, {name = "default:dirt_with_snow"})
 
         minetest._on_generated({x = 0, y = -1, z = 0}, {x = 15, y = 5, z = 15})
@@ -49,6 +57,7 @@ describe("Thermal Biome Transformation (CID-10)", function()
 
     it("R1: should convert snowblock to dirt adjacent to warm water", function()
         minetest.set_node({x = 5, y = 0, z = 5}, {name = "hot_springs:warm_water_source"})
+        setup_vent({x = 5, y = -1, z = 5}, 40)
         minetest.set_node({x = 6, y = 0, z = 5}, {name = "default:snowblock"})
 
         minetest._on_generated({x = 0, y = -1, z = 0}, {x = 15, y = 5, z = 15})
@@ -58,6 +67,7 @@ describe("Thermal Biome Transformation (CID-10)", function()
 
     it("R1: should convert ice to water_source adjacent to warm water", function()
         minetest.set_node({x = 5, y = 0, z = 5}, {name = "hot_springs:warm_water_source"})
+        setup_vent({x = 5, y = -1, z = 5}, 40)
         minetest.set_node({x = 6, y = 0, z = 5}, {name = "default:ice"})
 
         minetest._on_generated({x = 0, y = -1, z = 0}, {x = 15, y = 5, z = 15})
@@ -65,11 +75,13 @@ describe("Thermal Biome Transformation (CID-10)", function()
         assert.are.equal("default:water_source", minetest.get_node({x = 6, y = 0, z = 5}).name)
     end)
 
+
     -----------------------------------------------------------------------
     -- R2: Melt radius by temperature class
     -----------------------------------------------------------------------
     it("R2: warm water melts within 1 node, not 2", function()
         minetest.set_node({x = 5, y = 0, z = 5}, {name = "hot_springs:warm_water_source"})
+        setup_vent({x = 5, y = -1, z = 5}, 40)
         minetest.set_node({x = 6, y = 0, z = 5}, {name = "default:snow"})  -- dist 1 → melt
         minetest.set_node({x = 7, y = 0, z = 5}, {name = "default:snow"})  -- dist 2 → no melt
 
@@ -81,6 +93,7 @@ describe("Thermal Biome Transformation (CID-10)", function()
 
     it("R2: hot water melts within 2 nodes", function()
         minetest.set_node({x = 5, y = 0, z = 5}, {name = "hot_springs:hot_water_source"})
+        setup_vent({x = 5, y = -1, z = 5}, 60)
         minetest.set_node({x = 6, y = 0, z = 5}, {name = "default:snow"})  -- dist 1 → melt
         minetest.set_node({x = 7, y = 0, z = 5}, {name = "default:snow"})  -- dist 2 → melt
 
@@ -89,9 +102,9 @@ describe("Thermal Biome Transformation (CID-10)", function()
         assert.are.equal("air", minetest.get_node({x = 6, y = 0, z = 5}).name)
         assert.are.equal("air", minetest.get_node({x = 7, y = 0, z = 5}).name)
     end)
-
     it("R2: scalding water melts within 3 nodes", function()
         minetest.set_node({x = 5, y = 0, z = 5}, {name = "hot_springs:scalding_water_source"})
+        setup_vent({x = 5, y = -1, z = 5}, 90)
         minetest.set_node({x = 6, y = 0, z = 5}, {name = "default:snow"})  -- dist 1 → melt
         minetest.set_node({x = 8, y = 0, z = 5}, {name = "default:snow"})  -- dist 3 → melt
 
@@ -109,6 +122,7 @@ describe("Thermal Biome Transformation (CID-10)", function()
         -- some should convert and some should stay in a single run.
         math.randomseed(42)
         minetest.set_node({x = 5, y = 0, z = 5}, {name = "hot_springs:warm_water_source"})
+        setup_vent({x = 5, y = -1, z = 5}, 40)
         for dx = -1, 1 do
             for dz = -1, 1 do
                 if dx ~= 0 or dz ~= 0 then
@@ -138,6 +152,7 @@ describe("Thermal Biome Transformation (CID-10)", function()
     it("R3: should convert dirt to dirt_with_grass adjacent to warm water", function()
         math.randomseed(42)
         minetest.set_node({x = 5, y = 0, z = 5}, {name = "hot_springs:warm_water_source"})
+        setup_vent({x = 5, y = -1, z = 5}, 40)
         minetest.set_node({x = 6, y = 0, z = 5}, {name = "default:dirt"})
 
         minetest._on_generated({x = 0, y = -1, z = 0}, {x = 15, y = 5, z = 15})
@@ -153,6 +168,7 @@ describe("Thermal Biome Transformation (CID-10)", function()
     it("R4: should not grow moss on stone adjacent to scalding water", function()
         math.randomseed(42)
         minetest.set_node({x = 5, y = 0, z = 5}, {name = "hot_springs:scalding_water_source"})
+        setup_vent({x = 5, y = -1, z = 5}, 90)
         minetest.set_node({x = 6, y = 0, z = 5}, {name = "default:stone"})
 
         minetest._on_generated({x = 0, y = -1, z = 0}, {x = 15, y = 5, z = 15})
@@ -183,6 +199,7 @@ describe("Thermal Biome Transformation (CID-10)", function()
     -----------------------------------------------------------------------
     it("R6: should not modify non-default nodes", function()
         minetest.set_node({x = 5, y = 0, z = 5}, {name = "hot_springs:warm_water_source"})
+        setup_vent({x = 5, y = -1, z = 5}, 40)
         minetest.set_node({x = 6, y = 0, z = 5}, {name = "some_mod:custom_snow"})
 
         minetest._on_generated({x = 0, y = -1, z = 0}, {x = 15, y = 5, z = 15})
@@ -208,6 +225,7 @@ describe("Thermal Biome Transformation (CID-10)", function()
     -----------------------------------------------------------------------
     it("should trigger melt and moss from flowing water variants", function()
         minetest.set_node({x = 5, y = 0, z = 5}, {name = "hot_springs:warm_water_flowing"})
+        setup_vent({x = 5, y = -1, z = 5}, 40)
         minetest.set_node({x = 6, y = 0, z = 5}, {name = "default:snow"})
 
         minetest._on_generated({x = 0, y = -1, z = 0}, {x = 15, y = 5, z = 15})
