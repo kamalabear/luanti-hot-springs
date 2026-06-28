@@ -103,6 +103,12 @@ end
 config.warning_chat_enabled = read_bool("hot_springs_warning_chat_enabled", true)
 config.warning_cooldown = read_float("hot_springs_warning_cooldown", 10.0, 1.0, nil)
 
+-- Thermal Damage config (CID-1 extended)
+config.hot_damage = read_float("hot_springs_hot_damage", 0.0, 0.0, nil)
+config.flowing_damage = read_float("hot_springs_flowing_damage", 0.0, 0.0, nil)
+config.boiling_damage = read_float("hot_springs_boiling_damage", 3.0, 0.0, nil)
+config.no_drowning = read_bool("hot_springs_no_drowning", false)
+
 local function shallow_copy(t)
     local c = {}
     for k, v in pairs(t) do c[k] = v end
@@ -138,6 +144,10 @@ hot_water_flowing.special_tiles = {		{
 },
 }
 
+hot_water_flowing.damage_per_second = config.flowing_damage
+if config.no_drowning then
+    hot_water_flowing.drowning = 0
+end
 minetest.register_node("hot_springs:hot_water_flowing", hot_water_flowing)
 
 local water = minetest.registered_nodes["default:water_source"]
@@ -168,12 +178,17 @@ hot_water.special_tiles = {		{
 },
 }
 
+hot_water.damage_per_second = config.hot_damage
+if config.no_drowning then
+    hot_water.drowning = 0
+end
 minetest.register_node("hot_springs:hot_water_source", hot_water)
 
 hot_water.description = "Boiling water source"
-hot_water.damage_per_second = 5.0
-hot_water.drowning = 0
-
+hot_water.damage_per_second = config.boiling_damage
+if config.no_drowning then
+    hot_water.drowning = 0
+end
 minetest.register_node("hot_springs:boiling_water_source", hot_water)
 
 -- Steam ABMs (CID-2: Steam Spawner)

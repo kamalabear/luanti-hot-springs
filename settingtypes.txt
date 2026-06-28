@@ -21,3 +21,9 @@ hot_springs_steam_flowing_chance (ABM chance for flowing node) int 10 1 100
 # Hot Springs — Scalding Warning Effects
 hot_springs_warning_chat_enabled (Enable boiling water chat warning) bool true
 hot_springs_warning_cooldown (Seconds between repeat warnings) float 10.0 1.0 3600.0
+
+# Hot Springs — Thermal Damage
+hot_springs_hot_damage (Damage per second from hot water source) float 0.0 0.0 100.0
+hot_springs_flowing_damage (Damage per second from flowing hot water) float 0.0 0.0 100.0
+hot_springs_boiling_damage (Damage per second from boiling water source) float 3.0 0.0 100.0
+hot_springs_no_drowning (Disable drowning in hot spring water) bool false
