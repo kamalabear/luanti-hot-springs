@@ -581,7 +581,7 @@ local MELT_RADIUS = {
 	scalding = 3,
 }
 
-local MOSS_PROBABILITY = 0.075
+local MOSS_PROBABILITY = 0.25
 
 local function get_hs_class(node_name)
 	return node_name:match("^hot_springs:(%a+)_water_")

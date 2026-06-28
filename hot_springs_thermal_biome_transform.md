@@ -23,7 +23,7 @@ Server admins and world builders want hot springs to integrate naturally into th
   - Hot water: 2-node radius
   - Scalding water: 3-node radius
 
-**R3 (Moss growth):** The mod must, at worldgen time, convert exposed `default:stone` or `default:dirt` nodes adjacent to warm or hot spring water (source or flowing) to `default:mossycobble` or `default:dirt_with_grass` respectively, with a probability between 5% and 10%.
+**R3 (Moss growth):** The mod must, at worldgen time, convert exposed `default:stone` or `default:dirt` nodes adjacent to warm or hot spring water (source or flowing) to `default:mossycobble` or `default:dirt_with_grass` respectively, with a probability of approximately 25%.
 
 **R4 (Scalding exclusion for moss):** The mod must not apply moss growth near scalding water nodes.
 
@@ -43,7 +43,7 @@ Server admins and world builders want hot springs to integrate naturally into th
 **AC-R2:** Given a warm water source node next to `default:dirt_with_snow`, the `dirt_with_snow` is replaced with `default:dirt` within 1 node.
 **AC-R3:** Given a hot water source node next to `default:snowblock`, the snowblock is replaced with `default:dirt` within 2 nodes.
 **AC-R4:** Given a scalding water source node next to `default:ice`, the ice is replaced with `default:water_source` within 3 nodes.
-**AC-R5:** Given a warm water source with adjacent `default:stone`, there is a 5–10% chance the stone becomes `default:mossycobble`.
+**AC-R5:** Given a warm water source with adjacent `default:stone`, there is a nonzero chance the stone becomes `default:mossycobble` and less than 100% chance.
 **AC-R6:** Given a scalding water source with adjacent `default:stone`, the stone is never converted to moss.
 **AC-R7:** Given the effect is triggered during worldgen only, no ABM or globalstep fires these conversions.
 
