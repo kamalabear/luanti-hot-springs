@@ -1,5 +1,5 @@
 Title: Thermal Biome Transformation
-Status: Draft
+Status: Implemented
 Priority: Medium-term 1
 
 Goal

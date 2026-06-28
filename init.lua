@@ -554,6 +554,39 @@ minetest.register_biome({
 	humidity_point = 50,
 })
 
+-- CID-10: Thermal Biome Transformation constants
+local THERMAL_MELT_TARGETS = {
+	["default:snow"] = "air",
+	["default:snowblock"] = "default:dirt",
+	["default:dirt_with_snow"] = "default:dirt",
+	["default:ice"] = "default:water_source",
+}
+local MELT_TARGET_NAMES = {}
+for name in pairs(THERMAL_MELT_TARGETS) do
+	MELT_TARGET_NAMES[#MELT_TARGET_NAMES + 1] = name
+end
+
+local MOSS_TARGETS = {
+	["default:stone"] = "default:mossycobble",
+	["default:dirt"] = "default:dirt_with_grass",
+}
+local MOSS_TARGET_NAMES = {}
+for name in pairs(MOSS_TARGETS) do
+	MOSS_TARGET_NAMES[#MOSS_TARGET_NAMES + 1] = name
+end
+
+local MELT_RADIUS = {
+	warm = 1,
+	hot = 2,
+	scalding = 3,
+}
+
+local MOSS_PROBABILITY = 0.075
+
+local function get_hs_class(node_name)
+	return node_name:match("^hot_springs:(%a+)_water_")
+end
+
 -- CID-8: Gradient Worldgen — post-process each chunk to apply vent-driven water node replacement
 minetest.register_on_generated(function(minp, maxp)
 	local margin = config.vent_scan_radius
@@ -629,6 +662,81 @@ minetest.register_on_generated(function(minp, maxp)
 
 	for _, entry in ipairs(pending) do
 		minetest.set_node(entry.pos, {name = entry.name})
+	end
+
+	-- CID-10 Stage 2: Thermal Biome Transformation — melt snow/ice and grow moss
+	local hs_names = {
+		"hot_springs:warm_water_source",
+		"hot_springs:warm_water_flowing",
+		"hot_springs:hot_water_source",
+		"hot_springs:hot_water_flowing",
+		"hot_springs:scalding_water_source",
+		"hot_springs:scalding_water_flowing",
+	}
+	local hs_positions = minetest.find_nodes_in_area(minp, maxp, hs_names)
+	if #hs_positions > 0 then
+		local transform = {}
+		local seen = {}
+		for _, pos in ipairs(hs_positions) do
+			local node = minetest.get_node(pos)
+			local class = get_hs_class(node.name)
+			if class then
+				local radius = MELT_RADIUS[class]
+				if radius then
+					local minp2 = {
+						x = math.max(minp.x, pos.x - radius),
+						y = math.max(minp.y, pos.y - radius),
+						z = math.max(minp.z, pos.z - radius),
+					}
+					local maxp2 = {
+						x = math.min(maxp.x, pos.x + radius),
+						y = math.min(maxp.y, pos.y + radius),
+						z = math.min(maxp.z, pos.z + radius),
+					}
+					local targets = minetest.find_nodes_in_area(minp2, maxp2, MELT_TARGET_NAMES)
+					for _, tpos in ipairs(targets) do
+						local key = tpos.x .. "," .. tpos.y .. "," .. tpos.z
+						if not seen[key] then
+							seen[key] = true
+							local tnode = minetest.get_node(tpos)
+							local replacement = THERMAL_MELT_TARGETS[tnode.name]
+							if replacement then
+								transform[#transform + 1] = {pos = tpos, name = replacement}
+							end
+						end
+					end
+				end
+				if class == "warm" or class == "hot" then
+					local minp2 = {
+						x = math.max(minp.x, pos.x - 1),
+						y = math.max(minp.y, pos.y - 1),
+						z = math.max(minp.z, pos.z - 1),
+					}
+					local maxp2 = {
+						x = math.min(maxp.x, pos.x + 1),
+						y = math.min(maxp.y, pos.y + 1),
+						z = math.min(maxp.z, pos.z + 1),
+					}
+					local targets = minetest.find_nodes_in_area(minp2, maxp2, MOSS_TARGET_NAMES)
+					for _, tpos in ipairs(targets) do
+						if math.random() < MOSS_PROBABILITY then
+							local key = tpos.x .. "," .. tpos.y .. "," .. tpos.z
+							if not seen[key] then
+								seen[key] = true
+								local tnode = minetest.get_node(tpos)
+								local replacement = MOSS_TARGETS[tnode.name]
+								if replacement then
+									transform[#transform + 1] = {pos = tpos, name = replacement}
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+		for _, entry in ipairs(transform) do
+			minetest.set_node(entry.pos, {name = entry.name})
+		end
 	end
 end)
 

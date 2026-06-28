@@ -31,6 +31,7 @@ Adds warm, hot, and scalding spring water, steam effects, vent blocks, a tempera
 - ✅ **Thermal damage** — Configurable damage per second for each hot spring water type, with drowning toggle.
 - ✅ **Variable temperature** — Centralized temperature model with query and classification API, configurable class thresholds.
 - ✅ **Healing hot spring water** — Warm water heals at 0.5 HP/s, hot water at 1.0 HP/s, with 1s grace period, configurable rates, and golden glow feedback.
+- ✅ **Thermal biome transformation** — Hot springs melt surrounding snow and ice during worldgen; occasional moss growth on adjacent stone and dirt.
 
 ### Near-term Priorities
 

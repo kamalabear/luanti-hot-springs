@@ -15,7 +15,7 @@
 
 ## Architecture
 
-The mod uses nine conceptual components (CIDs):
+The mod uses ten conceptual components (CIDs):
 
 | CID | Name | Responsibility |
 |---|---|---|
@@ -28,6 +28,7 @@ The mod uses nine conceptual components (CIDs):
 | CID-7 | Migration Command | Chat command `/hot_springs_migrate` that replaces legacy node names with the current naming scheme |
 | CID-8 | Gradient Worldgen | `on_generated` callback that post-processes each chunk: temperature-driven water node replacement via vent falloff |
 | CID-9 | Healing System | Globalstep-based health-over-time in warm and hot water with 1s grace period, configurable rates, creative-mode exclusion, and golden glow visual feedback |
+| CID-10 | Thermal Biome Transformation | Post-processing stage in the `on_generated` callback that melts snow/ice and grows moss near hot spring water based on temperature class |
 
 ## Node naming
 
@@ -85,7 +86,7 @@ Run tests:
 busted
 ```
 
-Total: **94 tests, 0 failures** (all Busted unit tests pass on a mock engine).
+Total: **111 tests, 0 failures** (all Busted unit tests pass on a mock engine).
 
 ### Test files
 
@@ -97,6 +98,7 @@ Total: **94 tests, 0 failures** (all Busted unit tests pass on a mock engine).
 | `tests/temperature_spec.lua` | Temperature mapping, classification, thresholds, clamping, API availability, settings declaration (16 tests) |
 | `tests/temperature_gradient_spec.lua` | Position-aware temperature, vent gradient falloff, cache invalidation, migration command, vent block registration, gradient worldgen including auto vent placement and integration pipeline (24 tests) |
 | `tests/healing_spec.lua` | Warm/hot water healing rates, grace period, scalding exclusion, max health cap, creative exclusion, golden glow visual, leave cleanup (11 tests) |
+| `tests/thermal_biome_spec.lua` | Snow/ice melt, dirt_with_snow conversion, radius by temperature class, moss growth probability, scalding exclusion, worldgen-only, non-default protection, flowing water triggering (14 tests) |
 
 ## Adding a new setting
 
