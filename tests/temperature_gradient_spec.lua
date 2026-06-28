@@ -292,6 +292,7 @@ describe("Temperature Gradient System", function()
         reset_mock_settings({
             hot_springs_temp_gradient = 5.0,
             hot_springs_vent_scan_radius = 20,
+            hot_springs_vent_max_count = 1,
         })
         reload_mod()
         math.randomseed(1)

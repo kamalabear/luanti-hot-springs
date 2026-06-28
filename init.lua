@@ -21,6 +21,8 @@ local defaults = {
 	temp_scalding_min = 80,
 	temp_gradient = 5.0,
 	vent_scan_radius = 20,
+	vent_spread_radius = 200,
+	vent_max_count = 2,
 	heal_warm_rate = 0.5,
 	heal_hot_rate = 1.0,
 }
@@ -43,6 +45,8 @@ local clamps = {
 	temp_scalding_min = {1, nil},
 	temp_gradient = {0.1, nil},
 	vent_scan_radius = {1, nil},
+	vent_spread_radius = {1, 225},
+	vent_max_count = {1, nil},
 	heal_warm_rate = {0, 20},
 	heal_hot_rate = {0, 20},
 }
@@ -117,6 +121,10 @@ config.temp_scalding_min = t[3]
 -- Temperature Gradient settings (CID-1 extended)
 config.temp_gradient = read_float("hot_springs_temp_gradient", defaults.temp_gradient, clamps.temp_gradient[1], clamps.temp_gradient[2])
 config.vent_scan_radius = read_int("hot_springs_vent_scan_radius", defaults.vent_scan_radius, clamps.vent_scan_radius[1], clamps.vent_scan_radius[2])
+
+-- Vent spread config (CID-1 extended)
+config.vent_spread_radius = read_int("hot_springs_vent_spread_radius", defaults.vent_spread_radius, clamps.vent_spread_radius[1], clamps.vent_spread_radius[2])
+config.vent_max_count = read_int("hot_springs_vent_max_count", defaults.vent_max_count, clamps.vent_max_count[1], clamps.vent_max_count[2])
 
 -- Healing config (CID-1 extended)
 config.heal_warm_rate = read_float("hot_springs_heal_warm_rate", defaults.heal_warm_rate, clamps.heal_warm_rate[1], clamps.heal_warm_rate[2])
@@ -549,17 +557,19 @@ minetest.register_biome({
 -- CID-8: Gradient Worldgen — post-process each chunk to apply vent-driven water node replacement
 minetest.register_on_generated(function(minp, maxp)
 	local margin = config.vent_scan_radius
+	local spread = config.vent_spread_radius
+	local max_vents = config.vent_max_count
 
-	-- Place vents at the bottom of hot spring pools if none exist nearby
+	-- Place vents at the bottom of hot spring pools if below the vent count limit
 	local hs_pool_names = {"hot_springs:warm_water_source", "hot_springs:scalding_water_source"}
 	local pool_nodes = minetest.find_nodes_in_area(minp, maxp, hs_pool_names)
 	if #pool_nodes > 0 then
 		local existing_vents = minetest.find_nodes_in_area(
-			{x = minp.x - margin, y = minp.y - margin, z = minp.z - margin},
-			{x = maxp.x + margin, y = maxp.y + margin, z = maxp.z + margin},
+			{x = minp.x - spread, y = minp.y - spread, z = minp.z - spread},
+			{x = maxp.x + spread, y = maxp.y + spread, z = maxp.z + spread},
 			{"hot_springs:vent_block"}
 		)
-		if #existing_vents == 0 then
+		if #existing_vents < max_vents then
 			-- Find the lowest water node in the pool
 			local lowest = pool_nodes[1]
 			for _, pos in ipairs(pool_nodes) do
