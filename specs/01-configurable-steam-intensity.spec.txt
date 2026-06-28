@@ -1,5 +1,5 @@
 Title: Configurable Steam Intensity
-Status: Draft
+Status: Implemented
 Priority: Near-term 1
 
 Goal

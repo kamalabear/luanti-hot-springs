@@ -1,5 +1,5 @@
 Title: Scalding Warning Effects
-Status: Draft
+Status: Implemented
 Priority: Near-term 2
 
 Goal

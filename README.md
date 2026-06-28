@@ -21,8 +21,11 @@ Adds hot spring water, boiling water, steam effects, and a custom hot spring bio
 
 ### Settings And Tuning
 
-- Steam behavior and future balance changes should be controlled through settings when added.
-- See `settingtypes.txt` if new configurable behavior is introduced.
+All tunable behavior is exposed in `settingtypes.txt` and appears in Luanti's settings menu:
+
+**Steam particles:** amount, size, lifetime, glow, ABM cadence, and a master toggle.
+**Scalding warning:** enable/disable chat message, cooldown duration.
+**Thermal damage:** damage per second for hot water, flowing water, and boiling water; drowning prevention toggle.
 
 ### Compatibility Notes
 
@@ -42,10 +45,14 @@ Adds hot spring water, boiling water, steam effects, and a custom hot spring bio
 
 Natural hot spring biome generation already exists. Future work should focus on richer interactions, visuals, and gameplay around those generated areas.
 
+### Enhancement History
+
+- ✅ **Configurable steam intensity** — Settings for particle amount, size, lifetime, glow, and ABM cadence.
+- ✅ **Scalding warning effects** — Pre-damage cues (particles, sound, chat message) when entering dangerous water.
+- ✅ **Thermal damage** — Configurable damage per second for each hot spring water type, with drowning toggle.
+
 ### Near-term Priorities
 
-- **Configurable steam intensity** — Add settings for particle amount, size, and frequency so servers can tune visuals and performance.
-- **Scalding warning effects** — Add pre-damage cues (particles, sounds, or status feedback) when players enter dangerous water.
 - **Ambient thermal soundscape** — Play subtle bubbling and hissing sounds near hot and boiling pools.
 - **Variable temperature** — Assign each pool a temperature value that varies between pools.
 - **Temperature-based water color** — Tint pool water to reflect temperature (e.g. cool blue -> warm green -> hot orange/red), using one or more distinct color variants.

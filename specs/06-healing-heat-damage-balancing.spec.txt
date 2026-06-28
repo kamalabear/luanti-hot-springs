@@ -1,5 +1,5 @@
 Title: Healing and Heat Damage Balancing
-Status: Draft
+Status: Draft (split — damage portion implemented in #3 Thermal Damage)
 Priority: Near-term 6
 
 Goal
