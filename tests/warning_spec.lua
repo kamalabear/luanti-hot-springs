@@ -84,12 +84,12 @@ describe("Scalding Warning Effects", function()
     -------------------------------------------------------------------
     -- R1: Non-creative player in boiling water receives warning cues
     -------------------------------------------------------------------
-    it("R1: should warn non-creative player in boiling_water_source", function()
+    it("R1: should warn non-creative player in scalding_water_source", function()
         setup_basic_warning_env()
 
         local player = create_player("test1", { x = 0, y = 1, z = 0 }, { creative = false })
         minetest.get_connected_players = function() return { player } end
-        minetest.get_node = function(pos) return { name = "hot_springs:boiling_water_source" } end
+        minetest.get_node = function(pos) return { name = "hot_springs:scalding_water_source" } end
         minetest._player_privs["test1"] = { creative = false }
         minetest._us_time = 0
 
@@ -128,7 +128,7 @@ describe("Scalding Warning Effects", function()
 
         local player = create_player("test1", { x = 0, y = 1, z = 0 })
         minetest.get_connected_players = function() return { player } end
-        minetest.get_node = function(pos) return { name = "hot_springs:boiling_water_source" } end
+        minetest.get_node = function(pos) return { name = "hot_springs:scalding_water_source" } end
         minetest._player_privs["test1"] = { creative = true }
         minetest._us_time = 0
 
@@ -147,7 +147,7 @@ describe("Scalding Warning Effects", function()
 
         local player = create_player("test1", { x = 0, y = 1, z = 0 }, { creative = false })
         minetest.get_connected_players = function() return { player } end
-        minetest.get_node = function(pos) return { name = "hot_springs:boiling_water_source" } end
+        minetest.get_node = function(pos) return { name = "hot_springs:scalding_water_source" } end
         minetest._player_privs["test1"] = { creative = false }
         minetest._us_time = 0
 
@@ -165,7 +165,7 @@ describe("Scalding Warning Effects", function()
 
         local player = create_player("test1", { x = 5, y = 3, z = -2 }, { creative = false })
         minetest.get_connected_players = function() return { player } end
-        minetest.get_node = function(pos) return { name = "hot_springs:boiling_water_source" } end
+        minetest.get_node = function(pos) return { name = "hot_springs:scalding_water_source" } end
         minetest._player_privs["test1"] = { creative = false }
         minetest._us_time = 0
 
@@ -187,7 +187,7 @@ describe("Scalding Warning Effects", function()
 
         local player = create_player("test1", { x = 0, y = 1, z = 0 }, { creative = false })
         minetest.get_connected_players = function() return { player } end
-        minetest.get_node = function(pos) return { name = "hot_springs:boiling_water_source" } end
+        minetest.get_node = function(pos) return { name = "hot_springs:scalding_water_source" } end
         minetest._player_privs["test1"] = { creative = false }
         minetest._us_time = 0
 
@@ -205,7 +205,7 @@ describe("Scalding Warning Effects", function()
 
         local player = create_player("test1", { x = 0, y = 1, z = 0 }, { creative = false })
         minetest.get_connected_players = function() return { player } end
-        minetest.get_node = function(pos) return { name = "hot_springs:boiling_water_source" } end
+        minetest.get_node = function(pos) return { name = "hot_springs:scalding_water_source" } end
         minetest._player_privs["test1"] = { creative = false }
 
         -- tick 1: warning fires at t=0
@@ -224,7 +224,7 @@ describe("Scalding Warning Effects", function()
 
         local player = create_player("test1", { x = 0, y = 1, z = 0 }, { creative = false })
         minetest.get_connected_players = function() return { player } end
-        minetest.get_node = function(pos) return { name = "hot_springs:boiling_water_source" } end
+        minetest.get_node = function(pos) return { name = "hot_springs:scalding_water_source" } end
         minetest._player_privs["test1"] = { creative = false }
 
         minetest._us_time = 0
@@ -245,7 +245,7 @@ describe("Scalding Warning Effects", function()
 
         local player = create_player("test1", { x = 0, y = 1, z = 0 }, { creative = false })
         minetest.get_connected_players = function() return { player } end
-        minetest.get_node = function(pos) return { name = "hot_springs:boiling_water_source" } end
+        minetest.get_node = function(pos) return { name = "hot_springs:scalding_water_source" } end
         minetest._player_privs["test1"] = { creative = false }
         minetest._us_time = 0
 
@@ -266,7 +266,7 @@ describe("Scalding Warning Effects", function()
 
         local player = create_player("test1", { x = 0, y = 1, z = 0 }, { creative = false })
         minetest.get_connected_players = function() return { player } end
-        minetest.get_node = function(pos) return { name = "hot_springs:boiling_water_source" } end
+        minetest.get_node = function(pos) return { name = "hot_springs:scalding_water_source" } end
         minetest._player_privs["test1"] = { creative = false }
 
         minetest._us_time = 0
@@ -292,7 +292,7 @@ describe("Scalding Warning Effects", function()
 
         local player = create_player("test1", { x = 0, y = 1, z = 0 }, { creative = false })
         minetest.get_connected_players = function() return { player } end
-        minetest.get_node = function(pos) return { name = "hot_springs:boiling_water_source" } end
+        minetest.get_node = function(pos) return { name = "hot_springs:scalding_water_source" } end
         minetest._player_privs["test1"] = { creative = false }
         minetest._us_time = 0
 
@@ -317,7 +317,7 @@ describe("Scalding Warning Effects", function()
         local p1 = create_player("p1", { x = 0, y = 1, z = 0 }, { creative = false })
         local p2 = create_player("p2", { x = 5, y = 1, z = 0 }, { creative = false })
         minetest.get_connected_players = function() return { p1, p2 } end
-        minetest.get_node = function(pos) return { name = "hot_springs:boiling_water_source" } end
+        minetest.get_node = function(pos) return { name = "hot_springs:scalding_water_source" } end
         minetest._player_privs["p1"] = { creative = false }
         minetest._player_privs["p2"] = { creative = false }
         minetest._us_time = 0
@@ -343,7 +343,7 @@ describe("Scalding Warning Effects", function()
 
         local player = create_player("test1", { x = 0, y = 1, z = 0 }, { creative = false })
         minetest.get_connected_players = function() return { player } end
-        minetest.get_node = function(pos) return { name = "hot_springs:boiling_water_source" } end
+        minetest.get_node = function(pos) return { name = "hot_springs:scalding_water_source" } end
         minetest._player_privs["test1"] = { creative = false }
         minetest._us_time = 0
 
@@ -376,7 +376,7 @@ describe("Scalding Warning Effects", function()
 
         local player = create_player("test1", { x = 0, y = 1, z = 0 }, { creative = false })
         minetest.get_connected_players = function() return { player } end
-        minetest.get_node = function(pos) return { name = "hot_springs:boiling_water_source" } end
+        minetest.get_node = function(pos) return { name = "hot_springs:scalding_water_source" } end
         minetest._player_privs["test1"] = { creative = false }
         minetest._us_time = 0
 
@@ -397,7 +397,7 @@ describe("Scalding Warning Effects", function()
 
         local player = create_player("test1", { x = 0, y = 1, z = 0 }, { creative = false })
         minetest.get_connected_players = function() return { player } end
-        minetest.get_node = function(pos) return { name = "hot_springs:boiling_water_source" } end
+        minetest.get_node = function(pos) return { name = "hot_springs:scalding_water_source" } end
         minetest._player_privs["test1"] = { creative = false }
         minetest._us_time = 0
 
@@ -416,7 +416,7 @@ describe("Scalding Warning Effects", function()
 
         local player = create_player("test1", { x = 0, y = 1, z = 0 }, { creative = false })
         minetest.get_connected_players = function() return { player } end
-        minetest.get_node = function(pos) return { name = "hot_springs:boiling_water_source" } end
+        minetest.get_node = function(pos) return { name = "hot_springs:scalding_water_source" } end
         minetest._player_privs["test1"] = { creative = false }
         minetest._us_time = 0
 

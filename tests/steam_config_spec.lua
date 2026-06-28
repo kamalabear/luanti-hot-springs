@@ -43,11 +43,15 @@ describe("Configurable Steam Intensity", function()
         dofile(modpath .. "/init.lua")
     end
 
-    --- Find an ABM by nodename pattern.
-    local function find_abm(nodenames)
+    --- Find an ABM that matches a nodename or group.
+    local function find_abm(target)
         for _, abm in ipairs(captured_abms) do
-            if abm.nodenames and abm.nodenames[1] == nodenames then
-                return abm
+            if abm.nodenames then
+                for _, nn in ipairs(abm.nodenames) do
+                    if nn == target or nn == "group:" .. target then
+                        return abm
+                    end
+                end
             end
         end
         return nil
@@ -144,7 +148,7 @@ describe("Configurable Steam Intensity", function()
     it("R7: should use default flowing ABM cadence", function()
         reset_mock_settings({})
         reload_mod()
-        local abm = find_abm("hot_springs:hot_water_flowing")
+        local abm = find_abm("hot_springs_water")
         assert.is_not_nil(abm)
         assert.are.equal(30, abm.interval)
         assert.are.equal(10, abm.chance)
@@ -184,7 +188,7 @@ describe("Configurable Steam Intensity", function()
     it("R11: should use default flowing amount range", function()
         reset_mock_settings({})
         reload_mod()
-        local abm = find_abm("hot_springs:hot_water_flowing")
+        local abm = find_abm("hot_springs_water")
         assert.is_not_nil(abm)
         assert.are.equal(30, abm.interval)
         assert.are.equal(10, abm.chance)
@@ -199,7 +203,7 @@ describe("Configurable Steam Intensity", function()
     it("R12: should use default flowing exptime range", function()
         reset_mock_settings({})
         reload_mod()
-        local abm = find_abm("hot_springs:hot_water_flowing")
+        local abm = find_abm("hot_springs_water")
         assert.is_not_nil(abm)
         abm.action({ x = 0, y = 1, z = 0 }, nil, 0, 0)
         if #captured_particles > 0 then

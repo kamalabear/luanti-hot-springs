@@ -19,11 +19,18 @@ hot_springs_steam_flowing_interval (ABM interval for flowing node seconds) int 3
 hot_springs_steam_flowing_chance (ABM chance for flowing node) int 10 1 100
 
 # Hot Springs — Scalding Warning Effects
-hot_springs_warning_chat_enabled (Enable boiling water chat warning) bool true
+hot_springs_warning_chat_enabled (Enable scalding water chat warning) bool true
 hot_springs_warning_cooldown (Seconds between repeat warnings) float 10.0 1.0 3600.0
 
 # Hot Springs — Thermal Damage
-hot_springs_hot_damage (Damage per second from hot water source) float 0.0 0.0 100.0
-hot_springs_flowing_damage (Damage per second from flowing hot water) float 0.0 0.0 100.0
-hot_springs_boiling_damage (Damage per second from boiling water source) float 3.0 0.0 100.0
+hot_springs_hot_damage (Damage per second from warm/hot water source) float 0.0 0.0 100.0
+hot_springs_flowing_damage (Damage per second from flowing hot spring water) float 0.0 0.0 100.0
+hot_springs_boiling_damage (Damage per second from scalding water source) float 3.0 0.0 100.0
 hot_springs_no_drowning (Disable drowning in hot spring water) bool false
+
+# Hot Springs — Variable Temperature
+hot_springs_temp_warm_min (Min temperature for warm class) float 30 1 1000
+hot_springs_temp_hot_min (Min temperature for hot class) float 50 1 1000
+hot_springs_temp_scalding_min (Min temperature for scalding class) float 80 1 1000
+hot_springs_temp_gradient (Temperature loss per block from vent) float 5.0 0.1 100.0
+hot_springs_vent_scan_radius (Max distance to search for vents) int 20 1 500

@@ -75,7 +75,96 @@ _G.minetest = {
     end,
 
     -- Node query stubs.
-    get_node = function(pos) return { name = "air" } end,
+    get_node = function(pos)
+        for _, entry in ipairs(minetest._nodes_in_area) do
+            if entry.pos.x == pos.x and entry.pos.y == pos.y and entry.pos.z == pos.z then
+                return { name = entry.name }
+            end
+        end
+        return { name = "air" }
+    end,
+
+    -- Metadata stub.
+    _node_meta = {},
+    get_meta = function(pos)
+        local key = pos.x .. "," .. pos.y .. "," .. pos.z
+        if not minetest._node_meta[key] then
+            minetest._node_meta[key] = {}
+        end
+        local data = minetest._node_meta[key]
+        return {
+            get_int = function(self, name)
+                return data[name] or 0
+            end,
+            set_int = function(self, name, val)
+                data[name] = val
+            end,
+            get = function(self, name)
+                return data[name]
+            end,
+            set_string = function(self, name, val)
+                data[name] = val
+            end,
+            _data = data,
+        }
+    end,
+
+    -- Node area search stub.
+    _nodes_in_area = {},
+    find_nodes_in_area = function(minp, maxp, nodenames)
+        local results = {}
+        for _, entry in ipairs(minetest._nodes_in_area) do
+            local pos = entry.pos
+            local name = entry.name
+            if pos.x >= minp.x and pos.x <= maxp.x
+                and pos.y >= minp.y and pos.y <= maxp.y
+                and pos.z >= minp.z and pos.z <= maxp.z then
+                for _, nn in ipairs(nodenames) do
+                    if name == nn then
+                        table.insert(results, {x = pos.x, y = pos.y, z = pos.z})
+                        break
+                    end
+                end
+            end
+        end
+        return results
+    end,
+
+    -- Generated chunk stub.
+    _on_generated = nil,
+    register_on_generated = function(fn)
+        minetest._on_generated = fn
+    end,
+
+    -- Node placement/dig stubs.
+    _on_placenode = nil,
+    _on_dignode = nil,
+    register_on_placenode = function(fn)
+        minetest._on_placenode = fn
+    end,
+    register_on_dignode = function(fn)
+        minetest._on_dignode = fn
+    end,
+
+    -- Chat command stub.
+    _chatcommands = {},
+    register_chatcommand = function(name, def)
+        minetest._chatcommands[name] = def
+    end,
+
+    -- set_node stub.
+    set_node = function(pos, node)
+        -- update registered node, or create a placeholder
+        minetest.registered_nodes[node.name] = minetest.registered_nodes[node.name] or {name = node.name}
+        -- update _nodes_in_area entries
+        for i, entry in ipairs(minetest._nodes_in_area) do
+            if entry.pos.x == pos.x and entry.pos.y == pos.y and entry.pos.z == pos.z then
+                minetest._nodes_in_area[i] = {pos = {x = pos.x, y = pos.y, z = pos.z}, name = node.name}
+                return
+            end
+        end
+        table.insert(minetest._nodes_in_area, {pos = {x = pos.x, y = pos.y, z = pos.z}, name = node.name})
+    end,
 }
 
 --- Reset settings data between tests.
@@ -96,6 +185,12 @@ function reset_mock_state()
     minetest.registered_ores  = {}
     minetest._player_privs = {}
     minetest._us_time = 0
+    minetest._node_meta = {}
+    minetest._nodes_in_area = {}
+    minetest._on_placenode = nil
+    minetest._on_dignode = nil
+    minetest._on_generated = nil
+    minetest._chatcommands = {}
 end
 
 --- Create a mock player object for testing.

@@ -1,6 +1,12 @@
 # luanti-hot-springs
 
-Adds hot spring water, boiling water, steam effects, and a custom hot spring biome to Luanti.
+Adds warm, hot, and scalding spring water, steam effects, vent blocks, a temperature gradient system, and a custom hot spring biome to Luanti.
+
+---
+
+## Features
+
+- **Temperature Gradient System** — Vent blocks emit heat that dissipates over distance, creating pools with distinct warm, hot, and scalding zones. Each temperature has source and flowing node variants (6 liquid nodes total + the vent block).
 
 ---
 
@@ -12,21 +18,22 @@ Adds hot spring water, boiling water, steam effects, and a custom hot spring bio
 
 ## Documentation
 
-- [User's Guide](USAGE.md) — water types, effects, settings, troubleshooting
+- [User's Guide](USAGE.md) — water types, effects, settings, troubleshooting, migration command
 - [Developer's Guide](DEVELOPMENT.md) — file structure, CID architecture, node naming, settings system, test layout
 
 ---
 
 ## Enhancement History
 
+- ✅ **Temperature Gradient System** — Vent blocks, 3 temperature tiers (warm/hot/scalding), distance-based heat falloff, migration command, position-aware API.
 - ✅ **Configurable steam intensity** — Settings for particle amount, size, lifetime, glow, and ABM cadence.
 - ✅ **Scalding warning effects** — Pre-damage cues (particles, sound, chat message) when entering dangerous water.
 - ✅ **Thermal damage** — Configurable damage per second for each hot spring water type, with drowning toggle.
+- ✅ **Variable temperature** — Centralized temperature model with query and classification API, configurable class thresholds.
 
 ### Near-term Priorities
 
-- **Ambient thermal soundscape** — Play subtle bubbling and hissing sounds near hot and boiling pools.
-- **Variable temperature** — Assign each pool a temperature value that varies between pools.
+- **Ambient thermal soundscape** — Play subtle bubbling and hissing sounds near hot and scalding pools.
 - **Temperature-based water color** — Tint pool water to reflect temperature.
 - **Healing + heat damage balancing** — Implement healing and very-hot damage together, with rates tuned as one risk/reward system.
 

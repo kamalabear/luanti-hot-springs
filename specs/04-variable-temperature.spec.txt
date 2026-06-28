@@ -1,5 +1,5 @@
 Title: Variable Temperature Foundation
-Status: Draft
+Status: Implemented
 Priority: Near-term 4
 
 Goal

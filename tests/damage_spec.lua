@@ -63,12 +63,12 @@ describe("Thermal Damage", function()
     end)
 
     -------------------------------------------------------------------
-    -- R3: Boiling water source damage default
+    -- R3: Scalding water source damage default
     -------------------------------------------------------------------
-    it("R3: should default to 3.0 DPS for boiling_water_source", function()
+    it("R3: should default to 3.0 DPS for scalding_water_source", function()
         reset_mock_settings({})
         reload_mod()
-        local d = registered_damage["hot_springs:boiling_water_source"]
+        local d = registered_damage["hot_springs:scalding_water_source"]
         assert.is_not_nil(d)
         assert.are.equal(3.0, d.damage_per_second)
     end)
@@ -85,7 +85,7 @@ describe("Thermal Damage", function()
         reload_mod()
         assert.are.equal(1.5, registered_damage["hot_springs:hot_water_source"].damage_per_second)
         assert.are.equal(2.0, registered_damage["hot_springs:hot_water_flowing"].damage_per_second)
-        assert.are.equal(8.0, registered_damage["hot_springs:boiling_water_source"].damage_per_second)
+        assert.are.equal(8.0, registered_damage["hot_springs:scalding_water_source"].damage_per_second)
     end)
 
     -------------------------------------------------------------------
@@ -98,7 +98,7 @@ describe("Thermal Damage", function()
         })
         reload_mod()
         assert.are.equal(0, registered_damage["hot_springs:hot_water_source"].damage_per_second)
-        assert.are.equal(0, registered_damage["hot_springs:boiling_water_source"].damage_per_second)
+        assert.are.equal(0, registered_damage["hot_springs:scalding_water_source"].damage_per_second)
     end)
 
     -------------------------------------------------------------------
@@ -109,7 +109,7 @@ describe("Thermal Damage", function()
         reload_mod()
         -- no_drowning = false means drowning is NOT set to 0
         -- the field may be nil or 1 depending on the template copy
-        local d = registered_damage["hot_springs:boiling_water_source"]
+        local d = registered_damage["hot_springs:scalding_water_source"]
         assert.is_not_nil(d)
         -- should NOT have drowning = 0
         assert.is_not_equal(0, d.drowning)
@@ -121,11 +121,14 @@ describe("Thermal Damage", function()
     it("R4: should disable drowning when hot_springs_no_drowning is true", function()
         reset_mock_settings({ hot_springs_no_drowning = true })
         reload_mod()
-        -- all three nodes should have drowning = 0
+        -- all six nodes should have drowning = 0
         for _, name in ipairs({
+            "hot_springs:warm_water_source",
+            "hot_springs:warm_water_flowing",
             "hot_springs:hot_water_source",
             "hot_springs:hot_water_flowing",
-            "hot_springs:boiling_water_source",
+            "hot_springs:scalding_water_source",
+            "hot_springs:scalding_water_flowing",
         }) do
             assert.are.equal(0, registered_damage[name].drowning,
                 "drowning should be 0 for " .. name)
@@ -143,6 +146,8 @@ describe("Thermal Damage", function()
         reload_mod()
         assert.are.equal(2.0, registered_damage["hot_springs:hot_water_source"].damage_per_second)
         assert.are.equal(1.0, registered_damage["hot_springs:hot_water_flowing"].damage_per_second)
+        assert.are.equal(2.0, registered_damage["hot_springs:warm_water_source"].damage_per_second)
+        assert.are.equal(1.0, registered_damage["hot_springs:warm_water_flowing"].damage_per_second)
     end)
 
     -------------------------------------------------------------------

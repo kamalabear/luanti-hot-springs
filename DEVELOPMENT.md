@@ -4,7 +4,7 @@
 
 | File | Purpose |
 |---|---|
-| `init.lua` | Entry point — node definitions, config, ABMs, warning system, biome registration |
+| `init.lua` | Entry point — node definitions, config, ABMs, warning system, biome registration, migration command |
 | `mod.conf` | Mod name, display name, description, depends |
 | `settingtypes.txt` | All configurable settings with types, defaults, and safe ranges |
 | `textures/` | Water textures (source, flowing, animated variants) and steam particle texture |
@@ -15,22 +15,30 @@
 
 ## Architecture
 
-The mod uses four conceptual components (CIDs):
+The mod uses seven conceptual components (CIDs):
 
 | CID | Name | Responsibility |
 |---|---|---|
 | CID-1 | Mod Config | Reads and validates all settings at init; stores in the `config` table |
-| CID-2 | Steam Spawner | Two ABMs that spawn steam particles above source and flowing hot water |
-| CID-3 | Water Nodes | Defines all hot spring water nodes (hot_water_source, hot_water_flowing, boiling_water_source) |
-| CID-4 | Warning System | Globalstep-based detection of players in boiling water; dispatches sound, particle, and chat cues with per-player cooldown |
+| CID-2 | Steam Spawner | Two ABMs that spawn steam particles above source and flowing hot spring water |
+| CID-3 | Water Nodes | Defines all 6 hot spring water nodes (warm/hot/scalding, each with source and flowing) and the vent block |
+| CID-4 | Warning System | Globalstep-based detection of players in scalding water; dispatches sound, particle, and chat cues with per-player cooldown |
+| CID-5 | Temperature API | Position-aware node-to-temperature mapping, `get_pool_temperature(node_name, pos)` and `classify_temperature(temp)` functions with configurable thresholds. When `pos` is provided, checks per-node metadata, nearest vent within `vent_scan_radius` with gradient falloff, then static mapping fallback |
+| CID-6 | Biome Registration | Registers the hot spring biome using the current node names |
+| CID-7 | Migration Command | Chat command `/hot_springs_migrate` that replaces legacy node names with the current naming scheme |
+| CID-8 | Gradient Worldgen | `on_generated` callback that post-processes each chunk: temperature-driven water node replacement via vent falloff |
 
 ## Node naming
 
 | Node | Description |
 |---|---|
-| `hot_springs:hot_water_source` | Surface hot spring water (no damage by default) |
+| `hot_springs:warm_water_source` | Warm spring water (lowest tier, no damage by default) |
+| `hot_springs:warm_water_flowing` | Flowing warm spring water (no damage by default) |
+| `hot_springs:hot_water_source` | Hot spring water (mid tier, no damage by default) |
 | `hot_springs:hot_water_flowing` | Flowing hot spring water (no damage by default) |
-| `hot_springs:boiling_water_source` | Deep boiling water (3.0 DPS by default) |
+| `hot_springs:scalding_water_source` | Scalding spring water (highest tier, 3.0 DPS by default) |
+| `hot_springs:scalding_water_flowing` | Flowing scalding spring water (3.0 DPS by default) |
+| `hot_springs:vent_block` | Heat source block that emits temperature to nearby water |
 
 ## Settings
 
@@ -40,12 +48,29 @@ All setting keys are prefixed with `hot_springs_`. Category groups:
 - `hot_springs_warning_*` — Scalding warning behavior
 - `hot_springs_*_damage` — Damage per second per node type
 - `hot_springs_no_drowning` — Drowning prevention toggle
+- `hot_springs_temp_*` — Temperature class threshold boundaries
+- `hot_springs_temp_gradient` — Temperature lost per node of distance from vent
+- `hot_springs_vent_scan_radius` — Radius to search for vent blocks
 
 Settings are read at mod init, clamped to safe ranges, and stored in the `config` table. Invalid or missing settings fall back to defaults. Min/max pairs are swapped if inverted.
 
 ## Node registration
 
 Water nodes are cloned from `default:water_source` and `default:water_flowing` using a shallow copy to avoid polluting the originals. Each node type gets its own copy so that `damage_per_second`, `drowning`, and `description` are independent.
+
+The vent block is registered independently as a solid node with a `hot = 1` group for temperature gradient scanning.
+
+## Migration
+
+The `/hot_springs_migrate` command performs a bulk node replacement in the world. It scans all loaded blocks and replaces legacy node names with their current equivalents:
+
+| Legacy node | Replacement |
+|---|---|
+| `hot_springs:hot_water_source` | `hot_springs:warm_water_source` |
+| `hot_springs:hot_water_flowing` | `hot_springs:warm_water_flowing` |
+| `hot_springs:boiling_water_source` | `hot_springs:scalding_water_source` |
+
+The command reports the total number of replaced nodes. It requires the `server` privilege.
 
 ## Test layout
 
@@ -56,6 +81,8 @@ Run tests:
 busted
 ```
 
+Total: **83 tests, 0 failures** (all Busted unit tests pass on a mock engine).
+
 ### Test files
 
 | File | Coverage |
@@ -63,6 +90,8 @@ busted
 | `tests/steam_config_spec.lua` | Steam particle settings, ABM cadence, clamping, type coercion (17 tests) |
 | `tests/warning_spec.lua` | Warning detection, cooldown, chat toggle, creative skip, multiplayer independence (17 tests) |
 | `tests/damage_spec.lua` | Damage values per node, drowning toggle, clamping, load without errors (9 tests) |
+| `tests/temperature_spec.lua` | Temperature mapping, classification, thresholds, clamping, API availability, settings declaration (16 tests) |
+| `tests/temperature_gradient_spec.lua` | Position-aware temperature, vent gradient falloff, cache invalidation, migration command, vent block registration, gradient worldgen including auto vent placement and integration pipeline (24 tests) |
 
 ## Adding a new setting
 
