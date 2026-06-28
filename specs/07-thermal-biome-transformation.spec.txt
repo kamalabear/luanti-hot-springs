@@ -1,0 +1,54 @@
+Title: Thermal Biome Transformation
+Status: Draft
+Priority: Medium-term 1
+
+Goal
+Make hot springs feel alive by having their heat visibly affect the surrounding environment — melting snow in cold biomes and occasionally spawning moss near the pool edge.
+
+Current State
+- Hot spring water nodes have temperature data but no environmental interaction.
+- Snow, ice, and frozen terrain remain unchanged when a hot spring generates nearby.
+
+Scope
+- Melt snow and ice on solid blocks adjacent to warm or hotter water.
+- Occasionally convert exposed stone/dirt near pool edges to mossy variants.
+- Tie transformation intensity to water temperature (warmer water = larger radius).
+
+Out of Scope
+- Permanent biome alteration or mapblock rewriting.
+- Plant growth or tree spawning.
+- Player-placed block protection (operates on worldgen-generated nodes only).
+
+Design
+1. Melting:
+   - When a warm/hot/scalding water node is placed or generated, scan adjacent blocks.
+   - Replace `default:snow`, `default:snowblock`, `default:ice` with the underlying bare block (e.g., `default:dirt_with_snow` → `default:dirt`, `default:ice` → `default:water_source`).
+   - Radius scales with temperature class: warm = 1 node, hot = 2 nodes, scalding = 3 nodes.
+2. Moss growth:
+   - Low-probability conversion (e.g., 5–10%) of exposed stone or dirt adjacent to non-scalding hot springs water to `default:mossycobble` or `default:dirt_with_grass`.
+   - Only fires during worldgen (on_generated), not during gameplay.
+   - Scalding water does not grow moss (too hot).
+3. Both effects are purely worldgen-time, not runtime ABMs.
+
+Implementation Steps
+1. Add melting scan to CID-8 on_generated callback (or a new CID).
+2. Add moss growth scan with probability gate.
+3. Use temperature class of pool water to determine radius.
+4. Ensure no player-placed node is touched (check node owner or only modify default:* nodes).
+
+Testing Plan
+- Place warm water next to snow in a cold biome → snow is replaced.
+- Place scalding water next to ice → ice melts within 3-node radius.
+- Moss grows on stone adjacent to warm water at expected probability.
+- No changes occur outside the configured radius.
+
+Acceptance Criteria
+- Cold-biome hot springs visibly melt surrounding snow and ice.
+- Moss patches appear organically near warm pool edges.
+- Both effects run only during worldgen with no runtime cost.
+
+Risks and Mitigations
+- Risk: melting creates unexpected water sources.
+  Mitigation: only melt snow/ice on solid blocks, not water-adjacent nodes.
+- Risk: moss growth looks unnatural if too dense.
+  Mitigation: low probability and only on natural stone/dirt nodes.

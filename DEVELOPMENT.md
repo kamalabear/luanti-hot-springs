@@ -15,7 +15,7 @@
 
 ## Architecture
 
-The mod uses seven conceptual components (CIDs):
+The mod uses nine conceptual components (CIDs):
 
 | CID | Name | Responsibility |
 |---|---|---|
@@ -27,6 +27,7 @@ The mod uses seven conceptual components (CIDs):
 | CID-6 | Biome Registration | Registers the hot spring biome using the current node names |
 | CID-7 | Migration Command | Chat command `/hot_springs_migrate` that replaces legacy node names with the current naming scheme |
 | CID-8 | Gradient Worldgen | `on_generated` callback that post-processes each chunk: temperature-driven water node replacement via vent falloff |
+| CID-9 | Healing System | Globalstep-based health-over-time in warm and hot water with 1s grace period, configurable rates, creative-mode exclusion, and golden glow visual feedback |
 
 ## Node naming
 
@@ -81,7 +82,7 @@ Run tests:
 busted
 ```
 
-Total: **83 tests, 0 failures** (all Busted unit tests pass on a mock engine).
+Total: **94 tests, 0 failures** (all Busted unit tests pass on a mock engine).
 
 ### Test files
 
@@ -92,6 +93,7 @@ Total: **83 tests, 0 failures** (all Busted unit tests pass on a mock engine).
 | `tests/damage_spec.lua` | Damage values per node, drowning toggle, clamping, load without errors (9 tests) |
 | `tests/temperature_spec.lua` | Temperature mapping, classification, thresholds, clamping, API availability, settings declaration (16 tests) |
 | `tests/temperature_gradient_spec.lua` | Position-aware temperature, vent gradient falloff, cache invalidation, migration command, vent block registration, gradient worldgen including auto vent placement and integration pipeline (24 tests) |
+| `tests/healing_spec.lua` | Warm/hot water healing rates, grace period, scalding exclusion, max health cap, creative exclusion, golden glow visual, leave cleanup (11 tests) |
 
 ## Adding a new setting
 

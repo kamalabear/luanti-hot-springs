@@ -67,6 +67,10 @@ All settings are declared in `settingtypes.txt` and appear in Luanti's settings 
 - `hot_springs_temp_gradient` (float, default 5.0) — Temperature lost per node of distance from the nearest vent block.
 - `hot_springs_vent_scan_radius` (int, default 20) — Maximum radius (in nodes) to search for vent blocks when computing pool temperature.
 
+### Healing
+- `hot_springs_heal_warm_rate` (float, default 0.5) — HP per second restored in warm water after a 1-second grace period.
+- `hot_springs_heal_hot_rate` (float, default 1.0) — HP per second restored in hot water after a 1-second grace period.
+
 ## Troubleshooting
 
 - If the mod does not load, check the Luanti log for missing node or texture errors.

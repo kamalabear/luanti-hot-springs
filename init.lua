@@ -21,6 +21,8 @@ local defaults = {
 	temp_scalding_min = 80,
 	temp_gradient = 5.0,
 	vent_scan_radius = 20,
+	heal_warm_rate = 0.5,
+	heal_hot_rate = 1.0,
 }
 
 local clamps = {
@@ -41,6 +43,8 @@ local clamps = {
 	temp_scalding_min = {1, nil},
 	temp_gradient = {0.1, nil},
 	vent_scan_radius = {1, nil},
+	heal_warm_rate = {0, 20},
+	heal_hot_rate = {0, 20},
 }
 
 local function clamp(val, lo, hi)
@@ -113,6 +117,10 @@ config.temp_scalding_min = t[3]
 -- Temperature Gradient settings (CID-1 extended)
 config.temp_gradient = read_float("hot_springs_temp_gradient", defaults.temp_gradient, clamps.temp_gradient[1], clamps.temp_gradient[2])
 config.vent_scan_radius = read_int("hot_springs_vent_scan_radius", defaults.vent_scan_radius, clamps.vent_scan_radius[1], clamps.vent_scan_radius[2])
+
+-- Healing config (CID-1 extended)
+config.heal_warm_rate = read_float("hot_springs_heal_warm_rate", defaults.heal_warm_rate, clamps.heal_warm_rate[1], clamps.heal_warm_rate[2])
+config.heal_hot_rate = read_float("hot_springs_heal_hot_rate", defaults.heal_hot_rate, clamps.heal_hot_rate[1], clamps.heal_hot_rate[2])
 
 config.flowing_amount_min = read_float("hot_springs_steam_flowing_amount_min", 0.05, clamps.amount_min[1], clamps.amount_min[2])
 config.flowing_amount_max = read_float("hot_springs_steam_flowing_amount_max", 0.1, clamps.amount_max[1], clamps.amount_max[2])
@@ -612,4 +620,139 @@ minetest.register_on_generated(function(minp, maxp)
 	for _, entry in ipairs(pending) do
 		minetest.set_node(entry.pos, {name = entry.name})
 	end
+end)
+
+-- CID-9: Healing System
+local heal_state = {}
+
+local function is_healing_water(node_name)
+	return node_name == "hot_springs:warm_water_source"
+		or node_name == "hot_springs:warm_water_flowing"
+		or node_name == "hot_springs:hot_water_source"
+		or node_name == "hot_springs:hot_water_flowing"
+end
+
+local function get_heal_rate(node_name)
+	if node_name == "hot_springs:hot_water_source" or node_name == "hot_springs:hot_water_flowing" then
+		return config.heal_hot_rate
+	end
+	return config.heal_warm_rate
+end
+
+local HEAL_TICK = 1.0
+local GRACE_PERIOD = 1.0
+local GLOW_PARTICLES = {}
+local GLOW_POS = {}
+local GLOW_MOVE_THRESHOLD = 0.5
+
+local function spawn_glow(name, pos)
+	if GLOW_PARTICLES[name] then
+		minetest.delete_particlespawner(GLOW_PARTICLES[name])
+	end
+	GLOW_PARTICLES[name] = minetest.add_particlespawner({
+		amount = 10,
+		time = 0,
+		minpos = {x = pos.x - 0.8, y = pos.y + 0.3, z = pos.z - 0.8},
+		maxpos = {x = pos.x + 0.8, y = pos.y + 0.8, z = pos.z + 0.8},
+		minvel = {x = -0.2, y = 0.3, z = -0.2},
+		maxvel = {x = 0.2, y = 0.7, z = 0.2},
+		minacc = {x = 0, y = 0.1, z = 0},
+		maxacc = {x = 0, y = 0.2, z = 0},
+		minexptime = 1.0,
+		maxexptime = 1.8,
+		minsize = 0.8,
+		maxsize = 2.0,
+		texture = "hot_springs_heal_glow.png",
+		glow = 14,
+	})
+	GLOW_POS[name] = pos
+end
+
+minetest.register_globalstep(function(dtime)
+	for _, player in ipairs(minetest.get_connected_players()) do
+		local name = player:get_player_name()
+		if minetest.check_player_privs(name, {creative = true}) then
+			-- skip creative players
+		else
+			local pos = player:get_pos()
+			if pos then
+				local node = minetest.get_node(pos)
+				local node_below = minetest.get_node({x = pos.x, y = pos.y - 1, z = pos.z})
+				local water_node = nil
+				if is_healing_water(node.name) then
+					water_node = node.name
+				elseif is_healing_water(node_below.name) then
+					water_node = node_below.name
+				end
+
+				if water_node then
+					local state = heal_state[name]
+					if not state then
+						state = {timer = 0, active = false, accumulator = 0}
+						heal_state[name] = state
+					end
+					local prev_timer = state.timer
+					state.timer = state.timer + dtime
+					if state.timer >= GRACE_PERIOD then
+						local max_hp = player:get_properties().hp_max or 20
+						local hp = player:get_hp()
+
+						if hp < max_hp then
+							if not state.active then
+								state.active = true
+								spawn_glow(name, pos)
+							elseif not GLOW_PARTICLES[name] then
+								spawn_glow(name, pos)
+							elseif GLOW_POS[name] then
+								local dx = pos.x - GLOW_POS[name].x
+								local dz = pos.z - GLOW_POS[name].z
+								if dx * dx + dz * dz >= GLOW_MOVE_THRESHOLD * GLOW_MOVE_THRESHOLD then
+									spawn_glow(name, pos)
+								end
+							end
+							local rate = get_heal_rate(water_node)
+							local active_start = math.max(prev_timer, GRACE_PERIOD)
+							local active_dtime = state.timer - active_start
+							state.accumulator = state.accumulator + rate * active_dtime
+							if state.accumulator >= 1 then
+								local heal = math.floor(state.accumulator)
+								local new_hp = math.min(hp + heal, max_hp)
+								player:set_hp(new_hp)
+								state.accumulator = state.accumulator - heal
+								if new_hp >= max_hp and GLOW_PARTICLES[name] then
+									minetest.delete_particlespawner(GLOW_PARTICLES[name])
+									GLOW_PARTICLES[name] = nil
+									GLOW_POS[name] = nil
+								end
+							end
+						elseif GLOW_PARTICLES[name] then
+							minetest.delete_particlespawner(GLOW_PARTICLES[name])
+							GLOW_PARTICLES[name] = nil
+							GLOW_POS[name] = nil
+						end
+					end
+				else
+					local state = heal_state[name]
+					if state then
+						if state.active and GLOW_PARTICLES[name] then
+							minetest.delete_particlespawner(GLOW_PARTICLES[name])
+							GLOW_PARTICLES[name] = nil
+							GLOW_POS[name] = nil
+						end
+						heal_state[name] = nil
+					end
+				end
+			end
+		end
+	end
+end)
+
+minetest.register_on_leaveplayer(function(player)
+	local name = player:get_player_name()
+	if GLOW_PARTICLES[name] then
+		minetest.delete_particlespawner(GLOW_PARTICLES[name])
+		GLOW_PARTICLES[name] = nil
+		GLOW_POS[name] = nil
+	end
+	heal_state[name] = nil
 end)

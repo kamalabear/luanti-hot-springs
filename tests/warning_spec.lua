@@ -2,8 +2,6 @@ local modpath = "."
 
 describe("Scalding Warning Effects", function()
 
-    local captured_globalstep = nil
-    local captured_leaveplayer = nil
     local sound_play_calls = {}
     local particle_calls = {}
     local chat_calls = {}
@@ -19,10 +17,15 @@ describe("Scalding Warning Effects", function()
             _name = name or "test_player",
             _pos = pos or { x = 0, y = 0, z = 0 },
             _privs = privs,
+            _hp = 20,
+            _hp_max = 20,
             get_player_name = function(self) return self._name end,
             get_pos = function(self) return self._pos end,
             is_player = function(self) return true end,
             set_pos = function(self, p) self._pos = p end,
+            get_hp = function(self) return self._hp end,
+            set_hp = function(self, hp) self._hp = hp end,
+            get_properties = function(self) return { hp_max = self._hp_max } end,
         }
     end
 
@@ -49,13 +52,7 @@ describe("Scalding Warning Effects", function()
             liquid_alternative_source = "default:water_source",
         })
 
-        -- capture registrations
-        minetest.register_globalstep = function(fn)
-            captured_globalstep = fn
-        end
-        minetest.register_on_leaveplayer = function(fn)
-            captured_leaveplayer = fn
-        end
+        -- capture registrations using accumulator pattern
         minetest.sound_play = function(name, params)
             table.insert(sound_play_calls, { name = name, params = params })
         end
@@ -66,16 +63,10 @@ describe("Scalding Warning Effects", function()
             table.insert(chat_calls, { name = name, msg = msg })
         end
 
-        sound_play_calls = {}
-        particle_calls = {}
-        chat_calls = {}
-
         reload_mod()
     end
 
     before_each(function()
-        captured_globalstep = nil
-        captured_leaveplayer = nil
         sound_play_calls = {}
         particle_calls = {}
         chat_calls = {}
@@ -94,7 +85,7 @@ describe("Scalding Warning Effects", function()
         minetest._us_time = 0
 
         -- trigger one globalstep tick
-        captured_globalstep(1.0)
+        run_globalsteps(1.0)
 
         assert.is_true(#sound_play_calls > 0, "sound should play")
         assert.is_true(#particle_calls > 0, "particles should spawn")
@@ -113,10 +104,9 @@ describe("Scalding Warning Effects", function()
         minetest._player_privs["test1"] = { creative = false }
         minetest._us_time = 0
 
-        captured_globalstep(1.0)
+        run_globalsteps(1.0)
 
         assert.are.equal(0, #sound_play_calls)
-        assert.are.equal(0, #particle_calls)
         assert.are.equal(0, #chat_calls)
     end)
 
@@ -132,7 +122,7 @@ describe("Scalding Warning Effects", function()
         minetest._player_privs["test1"] = { creative = true }
         minetest._us_time = 0
 
-        captured_globalstep(1.0)
+        run_globalsteps(1.0)
 
         assert.are.equal(0, #sound_play_calls)
         assert.are.equal(0, #particle_calls)
@@ -151,7 +141,7 @@ describe("Scalding Warning Effects", function()
         minetest._player_privs["test1"] = { creative = false }
         minetest._us_time = 0
 
-        captured_globalstep(1.0)
+        run_globalsteps(1.0)
 
         assert.are.equal("hot_springs_hiss", sound_play_calls[1].name)
         assert.are.equal("test1", sound_play_calls[1].params.to_player)
@@ -169,7 +159,7 @@ describe("Scalding Warning Effects", function()
         minetest._player_privs["test1"] = { creative = false }
         minetest._us_time = 0
 
-        captured_globalstep(1.0)
+        run_globalsteps(1.0)
 
         assert.is_true(#particle_calls > 0)
         local p = particle_calls[1]
@@ -191,7 +181,7 @@ describe("Scalding Warning Effects", function()
         minetest._player_privs["test1"] = { creative = false }
         minetest._us_time = 0
 
-        captured_globalstep(1.0)
+        run_globalsteps(1.0)
 
         assert.are.equal("test1", chat_calls[1].name)
         assert.is_true(#chat_calls[1].msg > 0)
@@ -210,12 +200,12 @@ describe("Scalding Warning Effects", function()
 
         -- tick 1: warning fires at t=0
         minetest._us_time = 0
-        captured_globalstep(1.0)
+        run_globalsteps(1.0)
         assert.are.equal(1, #sound_play_calls)
 
         -- tick 2: still in water, only 5s passed (< default 10s cooldown)
         minetest._us_time = 5 * 1000000
-        captured_globalstep(1.0)
+        run_globalsteps(1.0)
         assert.are.equal(1, #sound_play_calls, "no second warning within cooldown")
     end)
 
@@ -228,12 +218,12 @@ describe("Scalding Warning Effects", function()
         minetest._player_privs["test1"] = { creative = false }
 
         minetest._us_time = 0
-        captured_globalstep(1.0)
+        run_globalsteps(1.0)
         assert.are.equal(1, #sound_play_calls)
 
         -- 15s later >> 10s cooldown
         minetest._us_time = 15 * 1000000
-        captured_globalstep(1.0)
+        run_globalsteps(1.0)
         assert.are.equal(2, #sound_play_calls, "warning should fire after cooldown")
     end)
 
@@ -249,7 +239,7 @@ describe("Scalding Warning Effects", function()
         minetest._player_privs["test1"] = { creative = false }
         minetest._us_time = 0
 
-        captured_globalstep(1.0)
+        run_globalsteps(1.0)
 
         -- sound and particles still fire
         assert.is_true(#sound_play_calls > 0, "sound should still play")
@@ -270,17 +260,17 @@ describe("Scalding Warning Effects", function()
         minetest._player_privs["test1"] = { creative = false }
 
         minetest._us_time = 0
-        captured_globalstep(1.0)
+        run_globalsteps(1.0)
         assert.are.equal(1, #sound_play_calls)
 
         -- 2s later (< 3s cooldown) — should NOT fire
         minetest._us_time = 2 * 1000000
-        captured_globalstep(1.0)
+        run_globalsteps(1.0)
         assert.are.equal(1, #sound_play_calls)
 
         -- 4s later (> 3s cooldown) — should fire
         minetest._us_time = 4 * 1000000
-        captured_globalstep(1.0)
+        run_globalsteps(1.0)
         assert.are.equal(2, #sound_play_calls)
     end)
 
@@ -296,15 +286,15 @@ describe("Scalding Warning Effects", function()
         minetest._player_privs["test1"] = { creative = false }
         minetest._us_time = 0
 
-        captured_globalstep(1.0)
+        run_globalsteps(1.0)
         assert.are.equal(1, #sound_play_calls)
 
         -- player leaves
-        captured_leaveplayer(player)
+        trigger_leaveplayer(player)
 
         -- rejoin (reset cooldown by cleanup)
         minetest._us_time = 2 * 1000000
-        captured_globalstep(1.0)
+        run_globalsteps(1.0)
         assert.are.equal(2, #sound_play_calls, "warning should fire again after leave+rejoin")
     end)
 
@@ -322,7 +312,7 @@ describe("Scalding Warning Effects", function()
         minetest._player_privs["p2"] = { creative = false }
         minetest._us_time = 0
 
-        captured_globalstep(1.0)
+        run_globalsteps(1.0)
 
         -- each player should have sound + particle + chat
         local p1_calls = 0
@@ -353,7 +343,7 @@ describe("Scalding Warning Effects", function()
             table.insert(log_calls, { level = level, msg = msg })
         end
 
-        captured_globalstep(1.0)
+        run_globalsteps(1.0)
 
         -- any warning-related prefix is fine; we just check no action-level spam
         for _, call in ipairs(log_calls) do
@@ -381,7 +371,7 @@ describe("Scalding Warning Effects", function()
         minetest._us_time = 0
 
         assert.has_no_errors(function()
-            captured_globalstep(1.0)
+            run_globalsteps(1.0)
         end)
 
         -- other cues should still fire
@@ -401,7 +391,7 @@ describe("Scalding Warning Effects", function()
         minetest._player_privs["test1"] = { creative = false }
         minetest._us_time = 0
 
-        captured_globalstep(1.0)
+        run_globalsteps(1.0)
 
         assert.are.equal(0, #sound_play_calls)
         assert.are.equal(0, #particle_calls)
@@ -420,17 +410,17 @@ describe("Scalding Warning Effects", function()
         minetest._player_privs["test1"] = { creative = false }
         minetest._us_time = 0
 
-        captured_globalstep(1.0)
+        run_globalsteps(1.0)
         assert.are.equal(1, #sound_play_calls)
 
         -- 0.5s later (< 1s clamped cooldown) — should NOT fire
         minetest._us_time = 0.5 * 1000000
-        captured_globalstep(1.0)
+        run_globalsteps(1.0)
         assert.are.equal(1, #sound_play_calls)
 
         -- 1.5s later (> 1s clamped cooldown) — should fire
         minetest._us_time = 1.5 * 1000000
-        captured_globalstep(1.0)
+        run_globalsteps(1.0)
         assert.are.equal(2, #sound_play_calls)
     end)
 

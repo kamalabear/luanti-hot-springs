@@ -44,18 +44,25 @@ _G.minetest = {
     -- Player stubs.
     get_connected_players = function() return {} end,
 
-    -- Particle stub.
-    add_particlespawner = function(def) end,
+    -- Particle stubs.
+    add_particlespawner = function(def) return 1 end,
+    delete_particlespawner = function(id) end,
 
     -- Chat stubs.
     chat_send_player = function(name, msg) end,
     chat_send_all    = function(msg) end,
 
-    -- Globalstep stub.
-    register_globalstep = function(fn) end,
+    -- Globalstep stub — appends to _globalsteps list.
+    _globalsteps = {},
+    register_globalstep = function(fn)
+        table.insert(minetest._globalsteps, fn)
+    end,
 
     -- Leaveplayer stub.
-    register_on_leaveplayer = function(fn) end,
+    _leaveplayer_hooks = {},
+    register_on_leaveplayer = function(fn)
+        table.insert(minetest._leaveplayer_hooks, fn)
+    end,
 
     -- Sound stub.
     sound_play = function(name, params) end,
@@ -75,7 +82,7 @@ _G.minetest = {
     end,
 
     -- Node query stubs.
-    get_node = function(pos)
+    _mock_get_node = function(pos)
         for _, entry in ipairs(minetest._nodes_in_area) do
             if entry.pos.x == pos.x and entry.pos.y == pos.y and entry.pos.z == pos.z then
                 return { name = entry.name }
@@ -83,6 +90,7 @@ _G.minetest = {
         end
         return { name = "air" }
     end,
+    get_node = function(pos) return minetest._mock_get_node(pos) end,
 
     -- Metadata stub.
     _node_meta = {},
@@ -191,6 +199,23 @@ function reset_mock_state()
     minetest._on_dignode = nil
     minetest._on_generated = nil
     minetest._chatcommands = {}
+    minetest._globalsteps = {}
+    minetest._leaveplayer_hooks = {}
+    minetest.get_node = function(pos) return minetest._mock_get_node(pos) end
+end
+
+--- Run all registered globalstep callbacks.
+function run_globalsteps(dtime)
+    for _, fn in ipairs(minetest._globalsteps) do
+        fn(dtime)
+    end
+end
+
+--- Trigger all registered leaveplayer hooks.
+function trigger_leaveplayer(player)
+    for _, fn in ipairs(minetest._leaveplayer_hooks) do
+        fn(player)
+    end
 end
 
 --- Create a mock player object for testing.
@@ -204,10 +229,15 @@ function mock_player(name, pos, privs)
         _name = name or "test_player",
         _pos = pos or { x = 0, y = 0, z = 0 },
         _privs = privs,
+        _hp = 20,
+        _hp_max = 20,
         get_player_name = function(self) return self._name end,
         get_pos = function(self) return self._pos end,
         is_player = function(self) return true end,
         set_pos = function(self, p) self._pos = p end,
         set_privs = function(self, p) self._privs = p end,
+        get_hp = function(self) return self._hp end,
+        set_hp = function(self, hp) self._hp = hp end,
+        get_properties = function(self) return { hp_max = self._hp_max } end,
     }
 end
